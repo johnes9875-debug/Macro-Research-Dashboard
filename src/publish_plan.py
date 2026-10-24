@@ -27,7 +27,7 @@ for ds in cfg["datasets"]:
     doc = {
         "source": {"kind": "file", "url": f"/_blob/{aid}", "name": f"{ds}.json"},
         "updated": {"at": now, "by": "Scheduled refresh (rates-monitor)"},
-        "schedule": "Refreshed twice daily by a scheduled task: 06:30 SGT Tue–Sat and 23:30 SGT Mon–Fri, from official public sources.",
+        "schedule": "Refreshed twice daily by a scheduled task: 06:00 SGT Tue–Sat and 23:00 SGT Mon–Fri, from official public sources.",
         "staleAfterHours": 60,
     }
     (out / f"{ds}.json").write_text(json.dumps(doc))
