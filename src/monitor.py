@@ -46,6 +46,8 @@ def changes(x: pd.Series) -> dict:
     out["pct_1y"] = rnd((yr < last).mean() * 100, 0)
     out["low_1y"], out["high_1y"] = rnd(yr.min(), 2), rnd(yr.max(), 2)
     out["level"], out["date"] = rnd(last, 2), last_d.strftime("%Y-%m-%d")
+    # last ~3 months of daily levels for the row sparkline
+    out["spark"] = [rnd(v, 3) for v in x[x.index > last_d - pd.Timedelta(days=92)].values]
     return out
 
 

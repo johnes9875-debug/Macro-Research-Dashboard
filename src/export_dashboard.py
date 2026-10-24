@@ -43,6 +43,8 @@ for c in ORDER:
         "priced_label": e["priced_12m"]["label"], "priced_12m_bp": rnd(e["priced_12m"]["vs_policy_bp"], 0),
         "priced_chg_1w_bp": rnd(e["priced_12m"]["chg_1w_bp"], 0),
         "next_meeting": nm.get("date"), "next_meeting_sgt": nm.get("sgt"),
+        "days_to_meeting": None if not nm.get("date") else
+            (__import__("datetime").date.fromisoformat(str(nm["date"])) - __import__("datetime").date.today()).days,
         "path_quality": e["path_quality"],
     })
 write("overview", overview)

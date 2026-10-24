@@ -1,360 +1,380 @@
 <style>
-.g10 { font-family: var(--font-anthropic-sans); color: var(--color-fg); display: flex; flex-direction: column; gap: var(--cds-gap-lg); }
-.g10-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; }
-.g10-lede { margin: var(--cds-gap-xs) 0 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-body); max-width: 64rem; }
-.g10-lede b { color: var(--color-fg); font-weight: 600; font-variant-numeric: tabular-nums; }
-.g10-asof { margin: var(--cds-gap-xs) 0 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
-.g10-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--color-border-line); overflow-x: auto; position: sticky; top: 0; background: var(--color-bg); z-index: 3; }
-.g10-tab { font: inherit; font-size: var(--cds-font-size-body); background: none; border: 0; border-bottom: 2px solid transparent; color: var(--color-fg-muted); padding: var(--cds-pad-sm) var(--cds-pad-md); cursor: pointer; white-space: nowrap; }
-.g10-tab[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
-.g10-pane { display: flex; flex-direction: column; gap: var(--cds-gap-lg); }
-.g10-pane[hidden] { display: none; }
-.g10-section > h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0 0 var(--cds-gap-xs); }
-.g10-sec-note { margin: 0 0 var(--cds-gap-sm); color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); max-width: 64rem; }
-.g10-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--cds-gap-md); }
-.g10-grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: var(--cds-gap-md); }
-.g10-card, .g10-panel { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); }
-.g10-card-head { display: flex; justify-content: space-between; align-items: baseline; }
-.g10-eco { font-weight: var(--cds-font-weight-medium); font-size: var(--cds-font-size-heading); }
-.g10-cb { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
-.g10-big-wrap { margin: var(--cds-gap-xs) 0 var(--cds-gap-sm); }
-.g10-big { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: calc(var(--cds-font-size-title) * 1.5); line-height: 1.1; font-variant-numeric: tabular-nums; min-height: 2.4rem; }
-.g10-big-note { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
-.g10-rows { margin: 0; display: grid; gap: 4px; font-size: var(--cds-font-size-caption); }
-.g10-rows > div { display: flex; justify-content: space-between; gap: var(--cds-gap-sm); border-top: 1px solid var(--color-border-line); padding-top: 4px; }
-.g10-rows dt { color: var(--color-fg-muted); }
-.g10-rows dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; display: flex; flex-direction: column; align-items: flex-end; font-size: var(--cds-font-size-body); }
-.g10-sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
-.g10-muted { color: var(--color-fg-muted); }
-.g10-small { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: flex; flex-direction: column; }
-.g10-small-title { margin: 0 0 var(--cds-gap-xs); font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
-.g10-chart { position: relative; min-height: 190px; }
-.g10-note { margin: var(--cds-gap-xs) 0 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
-.g10-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-bottom: var(--cds-gap-xs); }
-.g10-legend i { display: inline-block; width: 14px; height: 2px; margin-right: 6px; vertical-align: middle; }
-.g10-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 2; display: none; }
-.g10-tip .d { color: var(--cds-text-secondary); margin-bottom: 2px; }
-.g10-tip .sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
-.g10-table-wrap { overflow-x: auto; }
-.g10-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
-.g10-table th { text-align: right; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: 4px 8px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; position: sticky; top: 0; background: var(--color-panel); }
-.g10-table td { text-align: right; padding: 3px 8px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
-.g10-table .l { text-align: left; }
-.g10-table tr.g10-grp td { border-top: 1px solid var(--cds-chart-axis); }
-.g10-table td.g10-eco-cell { font-weight: var(--cds-font-weight-medium); }
-.g10-heat { border-radius: 3px; }
-.g10-rng { display: inline-flex; align-items: center; gap: 6px; }
-.g10-rng-track { position: relative; width: 64px; height: 4px; border-radius: 2px; background: var(--cds-chart-grid); }
-.g10-rng-dot { position: absolute; top: -3px; width: 2px; height: 10px; background: var(--color-fg); }
-.g10-warn { color: var(--color-warn); }
-.g10-bad { color: var(--color-bad); font-weight: var(--cds-font-weight-medium); }
-.g10-ok { color: var(--color-ok); }
-.g10-scroll { max-height: 32rem; overflow: auto; }
-.g10-footer { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); border-top: 1px solid var(--color-border-line); padding-top: var(--cds-gap-md); }
-.g10-footer p { margin: 0 0 var(--cds-gap-xs); }
+#dash-root { --dash-gutter: clamp(8px, 2vw, 24px); }
+.rm { --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --up: var(--color-bad); --dn: var(--color-ok);
+      font-family: var(--font-anthropic-sans); color: var(--color-fg); display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+.rm-num { font-family: var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.rm-up { color: var(--up); } .rm-dn { color: var(--dn); } .rm-flat { color: var(--color-fg-muted); }
+.rm-muted { color: var(--color-fg-muted); }
+
+/* status bar */
+.rm-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--cds-gap-sm) var(--cds-gap-lg);
+          border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-panel); padding: 10px 14px; }
+.rm-brand { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.rm-brand h1 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.rm-brand .rm-ccys { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); letter-spacing: .12em; }
+.rm-meta { display: flex; align-items: center; gap: var(--cds-gap-md); flex-wrap: wrap; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.rm-meta b { color: var(--color-fg); font-weight: 500; }
+.rm-pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border: 1px solid var(--color-border-line); border-radius: 999px; }
+.rm-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--rm-pill, var(--color-ok)); }
+
+/* key reads */
+.rm-reads { font-size: var(--cds-font-size-body); color: var(--color-fg-muted); line-height: 1.55; }
+.rm-reads b { color: var(--color-fg); font-weight: 600; }
+
+/* market strip */
+.rm-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr)); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-panel); overflow: hidden; }
+.rm-tile { padding: 10px 12px 8px; border-right: 1px solid var(--color-border-line); border-bottom: 1px solid var(--color-border-line); margin: 0 -1px -1px 0; min-width: 0; }
+.rm-tile-l { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--color-fg-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rm-tile-v { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; margin-top: 2px; }
+.rm-tile-v > span:first-child { font-size: 20px; font-weight: 500; }
+.rm-tile-c { font-size: 12px; }
+.rm-spark { height: 26px; margin-top: 4px; }
+
+/* tabs */
+.rm-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--color-border-line); overflow-x: auto; position: sticky; top: 0; background: var(--color-bg); z-index: 3; }
+.rm-tab { font: inherit; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; background: none; border: 0; border-bottom: 2px solid transparent;
+          color: var(--color-fg-muted); padding: 10px 14px; cursor: pointer; white-space: nowrap; }
+.rm-tab:hover { color: var(--color-fg); }
+.rm-tab[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); font-weight: 600; }
+.rm-pane { display: flex; flex-direction: column; gap: var(--cds-gap-lg); }
+.rm-pane[hidden] { display: none; }
+
+/* sections and cards */
+.rm-sec-h { display: flex; justify-content: space-between; align-items: baseline; gap: var(--cds-gap-md); flex-wrap: wrap;
+            border-bottom: 1px solid var(--color-border-line); padding-bottom: 6px; margin-bottom: 8px; }
+.rm-sec-h h2 { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+.rm-sec-h p { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); max-width: 52rem; }
+.rm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--cds-gap-sm); }
+.rm-grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: var(--cds-gap-sm); }
+.rm-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 10px 12px; display: flex; flex-direction: column; min-width: 0; }
+.rm-card-h { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; }
+.rm-card-h small { font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--color-fg-muted); }
+.rm-chart { position: relative; min-height: 190px; }
+.rm-note { margin: 6px 0 0; color: var(--color-fg-muted); font-size: 11px; line-height: 1.4; }
+.rm-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 11px; color: var(--color-fg-muted); margin-bottom: 6px; }
+.rm-legend i { display: inline-block; width: 14px; height: 2px; margin-right: 6px; vertical-align: middle; }
+
+/* tables */
+.rm-tw { overflow-x: auto; background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); }
+.rm-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.rm-table th { text-align: right; font-weight: 500; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--color-fg-muted);
+               padding: 7px 10px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; position: sticky; top: 0; background: var(--color-panel); z-index: 1; }
+.rm-table td { text-align: right; padding: 5px 10px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.rm-table td.t, .rm-table th.t { text-align: left; font-family: var(--font-anthropic-sans); }
+.rm-table tbody tr:hover td { background: color-mix(in srgb, var(--color-fg) 4%, transparent); }
+.rm-table tr.rm-grp td { border-top: 1px solid var(--cds-chart-axis); }
+.rm-table td.rm-eco { font-weight: 600; font-family: var(--font-anthropic-sans); letter-spacing: .04em; }
+.rm-table td.rm-strong { font-weight: 600; }
+.rm-table tbody tr:last-child td { border-bottom: 0; }
+.rm-rng { display: inline-flex; align-items: center; gap: 6px; }
+.rm-rng-track { position: relative; width: 56px; height: 4px; border-radius: 2px; background: var(--cds-chart-grid); }
+.rm-rng-dot { position: absolute; top: -3px; width: 2px; height: 10px; background: var(--color-fg); }
+.rm-cellspark { display: inline-block; width: 72px; height: 16px; vertical-align: middle; }
+.rm-warn { color: var(--color-warn); }
+.rm-bad { color: var(--color-bad); font-weight: 600; }
+.rm-ok { color: var(--color-ok); }
+.rm-badge { display: inline-block; padding: 0 6px; border-radius: 3px; font-size: 11px; border: 1px solid var(--color-border-line); font-family: var(--font-anthropic-sans); }
+.rm-scroll { max-height: 34rem; overflow: auto; }
+
+/* tooltip, states, footer */
+.rm-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover);
+          padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: 11px; white-space: nowrap; z-index: 4; display: none; font-family: var(--mono); }
+.rm-tip .d { color: var(--cds-text-secondary); margin-bottom: 2px; font-family: var(--font-anthropic-sans); }
+.rm-tip .sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+.rm-foot { color: var(--color-fg-muted); font-size: 11px; line-height: 1.5; border-top: 1px solid var(--color-border-line); padding-top: 10px; }
+.rm-foot p { margin: 0 0 4px; }
 [data-dash-source-state=empty] { color: transparent; }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
-.g10-fail { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: inherit; height: 100%; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
-.g10-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
-.g10 svg text { font-family: var(--font-anthropic-sans); }
+.rm-fail { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: inherit; height: 100%; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.rm-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+.rm svg text { font-family: var(--mono); }
 </style>
 
-<div class="g10">
-  <header>
-    <h1 class="g10-title" id="top">G10 rates monitor</h1>
-    <p class="g10-lede" id="takeaway">Priced vs today's policy rate, 12 months out:
-      USD <b data-source="overview" data-field="priced_12m_bp" data-where="economy=USD"></b>bp ·
-      EUR <b data-source="overview" data-field="priced_12m_bp" data-where="economy=EUR"></b>bp ·
-      GBP <b data-source="overview" data-field="priced_12m_bp" data-where="economy=GBP"></b>bp ·
-      JPY <b data-source="overview" data-field="priced_12m_bp" data-where="economy=JPY"></b>bp.
-      BoE OIS prices <b data-source="boe_meetings" data-field="change_bp" data-row="0"></b>bp at the
-      <span data-source="boe_meetings" data-field="date" data-row="0"></span> MPC.
-      Next decision: <b data-source="calendar" data-field="cb" data-row="0"></b>,
-      <span data-source="calendar" data-field="sgt" data-row="0"></span> SGT.</p>
-    <p class="g10-asof">Official public data (FRED, ECB, Eurostat, ONS, Bank of England, Bank of Japan, Japan MoF). US closes as of
-      <span data-source="overview" data-field="y10_date" data-where="economy=USD"></span>. Changes in basis points.</p>
+<div class="rm">
+  <header class="rm-bar" id="top">
+    <div class="rm-brand"><h1>G10 Rates Monitor</h1><span class="rm-ccys">USD · EUR · GBP · JPY</span></div>
+    <div class="rm-meta">
+      <span>US close <b class="rm-num" data-source="overview" data-field="y10_date" data-where="economy=USD"></b></span>
+      <span class="rm-pill" id="fresh-pill"><span><b class="rm-num" data-source="freshness" data-field="fresh"></b>/<span class="rm-num" data-source="freshness" data-field="total"></span> series fresh</span></span>
+      <span>Next: <b data-source="calendar" data-field="cb" data-row="0"></b> <span data-source="calendar" data-field="sgt" data-row="0"></span> SGT</span>
+    </div>
   </header>
 
-  <nav class="g10-tabs" role="tablist"><button class="g10-tab" role="tab" data-tab="overview" id="tab-overview">Overview</button><button class="g10-tab" role="tab" data-tab="curves" id="tab-curves">Curves & RV</button><button class="g10-tab" role="tab" data-tab="pricing" id="tab-pricing">Policy pricing</button><button class="g10-tab" role="tab" data-tab="macro" id="tab-macro">Macro</button><button class="g10-tab" role="tab" data-tab="health" id="tab-health">Data health</button></nav>
+  <p class="rm-reads" id="takeaway">Priced vs policy, ~12m: USD <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=USD"></b> ·
+    EUR <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=EUR"></b> ·
+    GBP <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=GBP"></b> ·
+    JPY <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=JPY"></b> bp.
+    BoE OIS prices <b class="rm-num" data-source="boe_meetings" data-field="change_bp" data-row="0"></b>bp at the <span data-source="boe_meetings" data-field="date" data-row="0"></span> MPC
+    (<span class="rm-num" data-source="boe_meetings" data-field="hike_odds_pct" data-row="0"></span>% of a 25bp hike).</p>
 
-  <!-- ===================== OVERVIEW ===================== -->
-  <div class="g10-pane" id="pane-overview" role="tabpanel">
-    <div class="g10-grid">
-  <article class="g10-card" id="card-USD">
-    <header class="g10-card-head"><span class="g10-eco">USD</span><span class="g10-cb" data-source="overview" data-field="cb" data-where="economy=USD">Fed</span></header>
-    <div class="g10-big-wrap">
-      <div class="g10-big dash-skeleton" data-source="overview" data-field="priced_12m_bp" data-where="economy=USD"></div>
-      <div class="g10-big-note">bp priced vs policy, <span data-source="overview" data-field="priced_label" data-where="economy=USD"></span> ahead
-        <span class="g10-muted">· 1w <span data-source="overview" data-field="priced_chg_1w_bp" data-where="economy=USD"></span></span></div>
+  <section class="rm-strip" id="strip" aria-label="Key benchmarks">
+    <div class="rm-tile" id="tile-USD-2y">
+      <div class="rm-tile-l">UST 2y</div>
+      <div class="rm-tile-v"><span class="rm-num dash-skeleton" data-source="rates_grid" data-field="level" data-where="key=USD 2y"></span><span class="rm-tile-c rm-num" data-source="rates_grid" data-field="chg_1d" data-where="key=USD 2y"></span></div>
+      <div class="rm-spark" data-source="rates_grid" data-spark="USD 2y"></div>
     </div>
-    <dl class="g10-rows">
-      <div><dt>Policy rate</dt><dd><span data-source="overview" data-field="policy" data-where="economy=USD"></span></dd></div>
-      <div><dt>Next decision</dt><dd><span data-source="overview" data-field="next_meeting" data-where="economy=USD"></span><span class="g10-sub" data-source="overview" data-field="next_meeting_sgt" data-where="economy=USD"></span></dd></div>
-      <div><dt>2y</dt><dd><span data-source="overview" data-field="y2" data-where="economy=USD"></span><span class="g10-sub">1d <span data-source="overview" data-field="y2_chg_1d" data-where="economy=USD"></span> · 1w <span data-source="overview" data-field="y2_chg_1w" data-where="economy=USD"></span></span></dd></div>
-      <div><dt>10y</dt><dd><span data-source="overview" data-field="y10" data-where="economy=USD"></span><span class="g10-sub">1d <span data-source="overview" data-field="y10_chg_1d" data-where="economy=USD"></span> · 1w <span data-source="overview" data-field="y10_chg_1w" data-where="economy=USD"></span></span></dd></div>
-      <div><dt>2s10s</dt><dd><span data-source="overview" data-field="s2s10s" data-where="economy=USD"></span><span class="g10-sub">1w <span data-source="overview" data-field="s2s10s_chg_1w" data-where="economy=USD"></span> · 1m <span data-source="overview" data-field="s2s10s_chg_1m" data-where="economy=USD"></span></span></dd></div>
-    </dl>
-  </article>
-  <article class="g10-card" id="card-EUR">
-    <header class="g10-card-head"><span class="g10-eco">EUR</span><span class="g10-cb" data-source="overview" data-field="cb" data-where="economy=EUR">ECB</span></header>
-    <div class="g10-big-wrap">
-      <div class="g10-big dash-skeleton" data-source="overview" data-field="priced_12m_bp" data-where="economy=EUR"></div>
-      <div class="g10-big-note">bp priced vs policy, <span data-source="overview" data-field="priced_label" data-where="economy=EUR"></span> ahead
-        <span class="g10-muted">· 1w <span data-source="overview" data-field="priced_chg_1w_bp" data-where="economy=EUR"></span></span></div>
+    <div class="rm-tile" id="tile-USD-10y">
+      <div class="rm-tile-l">UST 10y</div>
+      <div class="rm-tile-v"><span class="rm-num dash-skeleton" data-source="rates_grid" data-field="level" data-where="key=USD 10y"></span><span class="rm-tile-c rm-num" data-source="rates_grid" data-field="chg_1d" data-where="key=USD 10y"></span></div>
+      <div class="rm-spark" data-source="rates_grid" data-spark="USD 10y"></div>
     </div>
-    <dl class="g10-rows">
-      <div><dt>Policy rate</dt><dd><span data-source="overview" data-field="policy" data-where="economy=EUR"></span></dd></div>
-      <div><dt>Next decision</dt><dd><span data-source="overview" data-field="next_meeting" data-where="economy=EUR"></span><span class="g10-sub" data-source="overview" data-field="next_meeting_sgt" data-where="economy=EUR"></span></dd></div>
-      <div><dt>2y</dt><dd><span data-source="overview" data-field="y2" data-where="economy=EUR"></span><span class="g10-sub">1d <span data-source="overview" data-field="y2_chg_1d" data-where="economy=EUR"></span> · 1w <span data-source="overview" data-field="y2_chg_1w" data-where="economy=EUR"></span></span></dd></div>
-      <div><dt>10y</dt><dd><span data-source="overview" data-field="y10" data-where="economy=EUR"></span><span class="g10-sub">1d <span data-source="overview" data-field="y10_chg_1d" data-where="economy=EUR"></span> · 1w <span data-source="overview" data-field="y10_chg_1w" data-where="economy=EUR"></span></span></dd></div>
-      <div><dt>2s10s</dt><dd><span data-source="overview" data-field="s2s10s" data-where="economy=EUR"></span><span class="g10-sub">1w <span data-source="overview" data-field="s2s10s_chg_1w" data-where="economy=EUR"></span> · 1m <span data-source="overview" data-field="s2s10s_chg_1m" data-where="economy=EUR"></span></span></dd></div>
-    </dl>
-  </article>
-  <article class="g10-card" id="card-GBP">
-    <header class="g10-card-head"><span class="g10-eco">GBP</span><span class="g10-cb" data-source="overview" data-field="cb" data-where="economy=GBP">BoE</span></header>
-    <div class="g10-big-wrap">
-      <div class="g10-big dash-skeleton" data-source="overview" data-field="priced_12m_bp" data-where="economy=GBP"></div>
-      <div class="g10-big-note">bp priced vs policy, <span data-source="overview" data-field="priced_label" data-where="economy=GBP"></span> ahead
-        <span class="g10-muted">· 1w <span data-source="overview" data-field="priced_chg_1w_bp" data-where="economy=GBP"></span></span></div>
+    <div class="rm-tile" id="tile-USD-30y">
+      <div class="rm-tile-l">UST 30y</div>
+      <div class="rm-tile-v"><span class="rm-num dash-skeleton" data-source="rates_grid" data-field="level" data-where="key=USD 30y"></span><span class="rm-tile-c rm-num" data-source="rates_grid" data-field="chg_1d" data-where="key=USD 30y"></span></div>
+      <div class="rm-spark" data-source="rates_grid" data-spark="USD 30y"></div>
     </div>
-    <dl class="g10-rows">
-      <div><dt>Policy rate</dt><dd><span data-source="overview" data-field="policy" data-where="economy=GBP"></span></dd></div>
-      <div><dt>Next decision</dt><dd><span data-source="overview" data-field="next_meeting" data-where="economy=GBP"></span><span class="g10-sub" data-source="overview" data-field="next_meeting_sgt" data-where="economy=GBP"></span></dd></div>
-      <div><dt>2y</dt><dd><span data-source="overview" data-field="y2" data-where="economy=GBP"></span><span class="g10-sub">1d <span data-source="overview" data-field="y2_chg_1d" data-where="economy=GBP"></span> · 1w <span data-source="overview" data-field="y2_chg_1w" data-where="economy=GBP"></span></span></dd></div>
-      <div><dt>10y</dt><dd><span data-source="overview" data-field="y10" data-where="economy=GBP"></span><span class="g10-sub">1d <span data-source="overview" data-field="y10_chg_1d" data-where="economy=GBP"></span> · 1w <span data-source="overview" data-field="y10_chg_1w" data-where="economy=GBP"></span></span></dd></div>
-      <div><dt>2s10s</dt><dd><span data-source="overview" data-field="s2s10s" data-where="economy=GBP"></span><span class="g10-sub">1w <span data-source="overview" data-field="s2s10s_chg_1w" data-where="economy=GBP"></span> · 1m <span data-source="overview" data-field="s2s10s_chg_1m" data-where="economy=GBP"></span></span></dd></div>
-    </dl>
-  </article>
-  <article class="g10-card" id="card-JPY">
-    <header class="g10-card-head"><span class="g10-eco">JPY</span><span class="g10-cb" data-source="overview" data-field="cb" data-where="economy=JPY">BoJ</span></header>
-    <div class="g10-big-wrap">
-      <div class="g10-big dash-skeleton" data-source="overview" data-field="priced_12m_bp" data-where="economy=JPY"></div>
-      <div class="g10-big-note">bp priced vs policy, <span data-source="overview" data-field="priced_label" data-where="economy=JPY"></span> ahead
-        <span class="g10-muted">· 1w <span data-source="overview" data-field="priced_chg_1w_bp" data-where="economy=JPY"></span></span></div>
+    <div class="rm-tile" id="tile-USD-10y-breakeven">
+      <div class="rm-tile-l">US 10y BEI</div>
+      <div class="rm-tile-v"><span class="rm-num dash-skeleton" data-source="rates_grid" data-field="level" data-where="key=USD 10y breakeven"></span><span class="rm-tile-c rm-num" data-source="rates_grid" data-field="chg_1d" data-where="key=USD 10y breakeven"></span></div>
+      <div class="rm-spark" data-source="rates_grid" data-spark="USD 10y breakeven"></div>
     </div>
-    <dl class="g10-rows">
-      <div><dt>Policy rate</dt><dd><span data-source="overview" data-field="policy" data-where="economy=JPY"></span></dd></div>
-      <div><dt>Next decision</dt><dd><span data-source="overview" data-field="next_meeting" data-where="economy=JPY"></span><span class="g10-sub" data-source="overview" data-field="next_meeting_sgt" data-where="economy=JPY"></span></dd></div>
-      <div><dt>2y</dt><dd><span data-source="overview" data-field="y2" data-where="economy=JPY"></span><span class="g10-sub">1d <span data-source="overview" data-field="y2_chg_1d" data-where="economy=JPY"></span> · 1w <span data-source="overview" data-field="y2_chg_1w" data-where="economy=JPY"></span></span></dd></div>
-      <div><dt>10y</dt><dd><span data-source="overview" data-field="y10" data-where="economy=JPY"></span><span class="g10-sub">1d <span data-source="overview" data-field="y10_chg_1d" data-where="economy=JPY"></span> · 1w <span data-source="overview" data-field="y10_chg_1w" data-where="economy=JPY"></span></span></dd></div>
-      <div><dt>2s10s</dt><dd><span data-source="overview" data-field="s2s10s" data-where="economy=JPY"></span><span class="g10-sub">1w <span data-source="overview" data-field="s2s10s_chg_1w" data-where="economy=JPY"></span> · 1m <span data-source="overview" data-field="s2s10s_chg_1m" data-where="economy=JPY"></span></span></dd></div>
-    </dl>
-  </article>
+    <div class="rm-tile" id="tile-EUR-10y-AAA">
+      <div class="rm-tile-l">EUR 10y AAA</div>
+      <div class="rm-tile-v"><span class="rm-num dash-skeleton" data-source="rates_grid" data-field="level" data-where="key=EUR 10y AAA"></span><span class="rm-tile-c rm-num" data-source="rates_grid" data-field="chg_1d" data-where="key=EUR 10y AAA"></span></div>
+      <div class="rm-spark" data-source="rates_grid" data-spark="EUR 10y AAA"></div>
     </div>
+    <div class="rm-tile" id="tile-GBP-2y-OIS">
+      <div class="rm-tile-l">SONIA 2y OIS</div>
+      <div class="rm-tile-v"><span class="rm-num dash-skeleton" data-source="rates_grid" data-field="level" data-where="key=GBP 2y OIS"></span><span class="rm-tile-c rm-num" data-source="rates_grid" data-field="chg_1d" data-where="key=GBP 2y OIS"></span></div>
+      <div class="rm-spark" data-source="rates_grid" data-spark="GBP 2y OIS"></div>
+    </div>
+    <div class="rm-tile" id="tile-GBP-10y-gilt">
+      <div class="rm-tile-l">Gilt 10y</div>
+      <div class="rm-tile-v"><span class="rm-num dash-skeleton" data-source="rates_grid" data-field="level" data-where="key=GBP 10y gilt"></span><span class="rm-tile-c rm-num" data-source="rates_grid" data-field="chg_1d" data-where="key=GBP 10y gilt"></span></div>
+      <div class="rm-spark" data-source="rates_grid" data-spark="GBP 10y gilt"></div>
+    </div>
+    <div class="rm-tile" id="tile-JPY-10y-JGB">
+      <div class="rm-tile-l">JGB 10y</div>
+      <div class="rm-tile-v"><span class="rm-num dash-skeleton" data-source="rates_grid" data-field="level" data-where="key=JPY 10y JGB"></span><span class="rm-tile-c rm-num" data-source="rates_grid" data-field="chg_1d" data-where="key=JPY 10y JGB"></span></div>
+      <div class="rm-spark" data-source="rates_grid" data-spark="JPY 10y JGB"></div>
+    </div>
+  </section>
 
-    <section class="g10-section" id="grid">
-      <h2>Rates monitor</h2>
-      <p class="g10-sec-note">Level and change in bp. Shading: <span id="heat-key"></span>. The 1y bar shows where today's level sits in its one-year range.</p>
-      <div class="g10-panel g10-table-wrap">
-        <table class="g10-table" id="grid-table" data-source="rates_grid" data-row-key="key">
-          <thead><tr><th data-field="economy" class="l"></th><th data-field="instrument" class="l">Instrument</th><th data-field="level">Level %</th><th data-field="chg_1d">1d</th><th data-field="chg_1w">1w</th><th data-field="chg_1m">1m</th><th data-field="chg_3m">3m</th><th data-field="chg_ytd">YTD</th><th data-field="pct_1y">1y percentile</th><th data-field="date">As of</th></tr></thead>
+  <nav class="rm-tabs" role="tablist"><button class="rm-tab" role="tab" data-tab="overview" id="tab-overview">Overview</button><button class="rm-tab" role="tab" data-tab="curves" id="tab-curves">Curves & RV</button><button class="rm-tab" role="tab" data-tab="pricing" id="tab-pricing">Policy pricing</button><button class="rm-tab" role="tab" data-tab="macro" id="tab-macro">Macro</button><button class="rm-tab" role="tab" data-tab="health" id="tab-health">Data health</button></nav>
+
+  <!-- OVERVIEW -->
+  <div class="rm-pane" id="pane-overview" role="tabpanel">
+    <section id="board">
+      <div class="rm-sec-h"><h2>Central bank board</h2><p>Priced = market-implied change vs today's policy rate about 12 months out. GBP from OIS; USD, EUR, JPY are government-curve proxies.</p></div>
+      <div class="rm-tw">
+        <table class="rm-table" id="board-table" data-source="overview" data-row-key="economy">
+          <thead><tr><th class="t" data-field="economy">Ccy</th><th class="t" data-field="cb">Bank</th><th data-field="policy">Policy %</th><th class="t" data-field="next_meeting">Next decision</th><th data-field="days_to_meeting">Days</th>
+            <th data-field="priced_12m_bp">Priced 12m</th><th data-field="priced_chg_1w_bp">Δ1w</th><th data-field="y2">2y %</th><th data-field="y2_chg_1d">Δ1d</th><th data-field="y10">10y %</th><th data-field="y10_chg_1d">Δ1d</th><th data-field="s2s10s">2s10s</th><th data-field="s2s10s_chg_1w">Δ1w</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
     </section>
 
-    <section class="g10-section" id="cal">
-      <h2>Central bank calendar</h2>
-      <div class="g10-panel g10-table-wrap">
-        <table class="g10-table" id="cal-table" data-source="calendar" data-row-key="key">
-          <thead><tr><th data-field="date" class="l">Decision</th><th data-field="cb" class="l">Central bank</th><th data-field="economy" class="l">Currency</th><th data-field="sgt" class="l">Singapore time</th></tr></thead>
+    <section id="grid">
+      <div class="rm-sec-h"><h2>Rates monitor</h2><p>Changes in bp. <span class="rm-dn">Green = yields down</span>, <span class="rm-up">red = yields up</span> (bond-price convention). Bar: position in 1-year range.</p></div>
+      <div class="rm-tw">
+        <table class="rm-table" id="grid-table" data-source="rates_grid" data-row-key="key">
+          <thead><tr><th class="t" data-field="economy"></th><th class="t" data-field="instrument">Instrument</th><th data-field="level">Level %</th><th data-field="spark">3m</th><th data-field="chg_1d">Δ1d</th><th data-field="chg_1w">Δ1w</th><th data-field="chg_1m">Δ1m</th><th data-field="chg_3m">Δ3m</th><th data-field="chg_ytd">YTD</th><th data-field="pct_1y">1y pctile</th><th data-field="date">As of</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
     </section>
-  </div>
 
-  <!-- ===================== CURVES & RV ===================== -->
-  <div class="g10-pane" id="pane-curves" role="tabpanel" hidden>
-    <section class="g10-section" id="snapshots">
-      <h2>Curve snapshots</h2>
-      <p class="g10-sec-note">Government curves today vs one week and one month ago (tenor on a log scale). GBP mixes the BoE 2y spot with 5y–20y par yields; EUR is the ECB AAA curve.</p>
-      <div class="g10-legend" id="snap-legend"></div>
-      <div class="g10-grid">
-    <div class="g10-small">
-      <h3 class="g10-small-title">USD</h3>
-      <div class="g10-chart" id="snap-USD" data-source="curves"></div>
-    </div>
-    <div class="g10-small">
-      <h3 class="g10-small-title">EUR</h3>
-      <div class="g10-chart" id="snap-EUR" data-source="curves"></div>
-    </div>
-    <div class="g10-small">
-      <h3 class="g10-small-title">GBP</h3>
-      <div class="g10-chart" id="snap-GBP" data-source="curves"></div>
-    </div>
-    <div class="g10-small">
-      <h3 class="g10-small-title">JPY</h3>
-      <div class="g10-chart" id="snap-JPY" data-source="curves"></div>
-    </div>
-      </div>
-    </section>
-
-    <section class="g10-section" id="rv">
-      <h2>Curve relative value</h2>
-      <p class="g10-sec-note">Slopes and the 2s5s10s butterfly (2×5y − 2y − 10y; negative = 5y rich vs the wings). z-score vs the past year; |z| ≥ 1.5 highlighted.</p>
-      <div class="g10-grid-2">
-        <div class="g10-panel g10-table-wrap">
-          <table class="g10-table" id="rv-table" data-source="curve_rv" data-row-key="key">
-            <thead><tr><th data-field="economy" class="l"></th><th data-field="measure" class="l">Measure</th><th data-field="value_bp">bp</th><th data-field="chg_1w">1w</th><th data-field="chg_1m">1m</th><th data-field="z_1y">z (1y)</th><th data-field="low_1y">1y low</th><th data-field="high_1y">1y high</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="g10-panel g10-table-wrap">
-          <table class="g10-table" id="spreads-table" data-source="spreads" data-row-key="name">
-            <thead><tr><th data-field="name" class="l">Cross-market spread</th><th data-field="value_bp">bp</th><th data-field="chg_1w_bp">1w</th><th data-field="chg_1m_bp">1m</th><th data-field="z_1y">z (1y)</th><th data-field="low_1y">1y low</th><th data-field="high_1y">1y high</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section class="g10-section" id="spread-hist">
-      <h2>Cross-market spreads, weekly</h2>
-      <div class="g10-panel">
-        <div class="g10-legend" id="spreads-legend"></div>
-        <div class="g10-chart" id="spreads-chart" data-source="spreads_hist" style="min-height:260px"></div>
-      </div>
-    </section>
-
-    <section class="g10-section" id="yields">
-      <h2>2y and 10y yields with policy rate, two years</h2>
-      <div class="g10-legend" id="yields-legend"></div>
-      <div class="g10-grid">
-    <div class="g10-small">
-      <h3 class="g10-small-title">USD</h3>
-      <div class="g10-chart" id="yld-USD" data-source="yields_hist"></div>
-    </div>
-    <div class="g10-small">
-      <h3 class="g10-small-title">EUR</h3>
-      <div class="g10-chart" id="yld-EUR" data-source="yields_hist"></div>
-    </div>
-    <div class="g10-small">
-      <h3 class="g10-small-title">GBP</h3>
-      <div class="g10-chart" id="yld-GBP" data-source="yields_hist"></div>
-    </div>
-    <div class="g10-small">
-      <h3 class="g10-small-title">JPY</h3>
-      <div class="g10-chart" id="yld-JPY" data-source="yields_hist"></div>
-    </div>
-      </div>
-    </section>
-  </div>
-
-  <!-- ===================== POLICY PRICING ===================== -->
-  <div class="g10-pane" id="pane-pricing" role="tabpanel" hidden>
-    <section class="g10-section" id="boe">
-      <h2>Bank of England: meeting-by-meeting pricing</h2>
-      <p class="g10-sec-note">Expected Bank Rate after each MPC meeting, from the BoE OIS instantaneous forward curve (average forward until the next meeting, adjusted for the SONIA–Bank Rate basis). Curve date <span data-source="boe_meetings" data-field="curve_date" data-row="0"></span>.
-        Bars: cumulative bp vs today's Bank Rate; tick: one week earlier.</p>
-      <div class="g10-grid-2">
-        <div class="g10-panel"><div class="g10-chart" id="boe-chart" data-source="boe_meetings" style="min-height:240px"></div></div>
-        <div class="g10-panel g10-table-wrap">
-          <table class="g10-table" id="boe-table" data-source="boe_meetings" data-row-key="date">
-            <thead><tr><th data-field="date" class="l">MPC</th><th data-field="implied_rate">Implied rate %</th><th data-field="change_bp">At meeting</th><th data-field="hike_odds_pct">25bp odds %</th><th data-field="cumulative_bp">Cumulative</th><th data-field="cumulative_bp_1w">1w ago</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section class="g10-section" id="paths">
-      <h2>Market-implied path, all four</h2>
-      <p class="g10-sec-note">bp above (+) or below (−) today's policy rate, by months ahead. Solid: latest; dashed: one week earlier. Shared scale.</p>
-      <div class="g10-grid">
-    <div class="g10-small">
-      <h3 class="g10-small-title">USD</h3>
-      <div class="g10-chart" id="path-USD" data-source="implied_path overview"></div><p class="g10-note" data-source="overview" data-field="path_quality" data-where="economy=USD"></p>
-    </div>
-    <div class="g10-small">
-      <h3 class="g10-small-title">EUR</h3>
-      <div class="g10-chart" id="path-EUR" data-source="implied_path overview"></div><p class="g10-note" data-source="overview" data-field="path_quality" data-where="economy=EUR"></p>
-    </div>
-    <div class="g10-small">
-      <h3 class="g10-small-title">GBP</h3>
-      <div class="g10-chart" id="path-GBP" data-source="implied_path overview"></div><p class="g10-note" data-source="overview" data-field="path_quality" data-where="economy=GBP"></p>
-    </div>
-    <div class="g10-small">
-      <h3 class="g10-small-title">JPY</h3>
-      <div class="g10-chart" id="path-JPY" data-source="implied_path overview"></div><p class="g10-note" data-source="overview" data-field="path_quality" data-where="economy=JPY"></p>
-    </div>
-      </div>
-    </section>
-  </div>
-
-  <!-- ===================== MACRO ===================== -->
-  <div class="g10-pane" id="pane-macro" role="tabpanel" hidden>
-    <section class="g10-section" id="macro">
-      <h2>Inflation, labour and growth</h2>
-      <p class="g10-sec-note">Latest print vs prior. Japan CPI not yet collected (needs a free e-Stat app ID).</p>
-      <div class="g10-grid-2">
-        <div class="g10-panel g10-table-wrap">
-          <table class="g10-table" id="macro-table" data-source="macro_latest" data-row-key="key">
-            <thead><tr><th data-field="economy" class="l"></th><th data-field="metric" class="l">Measure</th><th data-field="value">Latest</th><th data-field="prior">Prior</th><th data-field="change">Change</th><th data-field="period">Period</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="g10-panel">
-          <h3 class="g10-small-title">Headline and core inflation, y/y %</h3>
-          <div class="g10-legend" id="infl-legend"></div>
-          <div class="g10-chart" id="infl-USD" data-source="macro_hist" style="min-height:150px"></div>
-          <div class="g10-chart" id="infl-EUR" data-source="macro_hist" style="min-height:150px"></div>
-          <div class="g10-chart" id="infl-GBP" data-source="macro_hist" style="min-height:150px"></div>
-          <h3 class="g10-small-title" style="margin-top: var(--cds-gap-md)">Unemployment rate, %</h3>
-          <div class="g10-chart" id="unemp-chart" data-source="macro_hist" style="min-height:180px"></div>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <!-- ===================== DATA HEALTH ===================== -->
-  <div class="g10-pane" id="pane-health" role="tabpanel" hidden>
-    <section class="g10-section" id="health">
-      <h2>Data health</h2>
-      <p class="g10-sec-note">Every series the monitor uses, with its latest observation. A series is stale when it is older than its usual publication lag (daily 5 days, weekly 12, monthly 75, quarterly 200, measured from the end of the period). Stale series are listed first.</p>
-      <div class="g10-panel g10-table-wrap g10-scroll">
-        <table class="g10-table" id="health-table" data-source="data_health" data-row-key="series">
-          <thead><tr><th data-field="status" class="l">Status</th><th data-field="series" class="l">Series</th><th data-field="economy" class="l">Currency</th><th data-field="name" class="l">Description</th><th data-field="source" class="l">Source</th><th data-field="frequency" class="l">Freq</th><th data-field="last_obs">Last observation</th><th data-field="age_days">Age (days)</th></tr></thead>
+    <section id="cal">
+      <div class="rm-sec-h"><h2>Central bank calendar</h2></div>
+      <div class="rm-tw">
+        <table class="rm-table" id="cal-table" data-source="calendar" data-row-key="key">
+          <thead><tr><th class="t" data-field="date">Decision</th><th class="t" data-field="cb">Bank</th><th class="t" data-field="economy">Ccy</th><th class="t" data-field="sgt">Singapore time</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
     </section>
   </div>
 
-  <footer class="g10-footer">
-    <p>Pricing: GBP uses the Bank of England OIS forward curve. USD (Treasury bills/notes vs the fed funds midpoint), EUR (ECB AAA curve vs the deposit rate) and JPY (JGB 1y/2y vs the call rate) are government-curve proxies that carry term premium and supply effects: read direction and shape, not exact bp.</p>
-    <p>Euro area HICP comes from Eurostat's 2026 ECOICOP 2 dataset. US year-on-year rates are computed on the calendar, so the missing October 2025 CPI (US government shutdown) does not distort them.</p>
+  <!-- CURVES & RV -->
+  <div class="rm-pane" id="pane-curves" role="tabpanel" hidden>
+    <section id="snapshots">
+      <div class="rm-sec-h"><h2>Curve snapshots</h2><p>Today vs 1 week and 1 month ago, tenor on log scale. EUR = ECB AAA curve; GBP mixes the BoE 2y spot with 5–20y par yields.</p></div>
+      <div class="rm-legend" id="snap-legend"></div>
+      <div class="rm-grid">
+    <div class="rm-card">
+      <div class="rm-card-h"><span>USD</span></div>
+      <div class="rm-chart" id="snap-USD" data-source="curves"></div>
+    </div>
+    <div class="rm-card">
+      <div class="rm-card-h"><span>EUR</span></div>
+      <div class="rm-chart" id="snap-EUR" data-source="curves"></div>
+    </div>
+    <div class="rm-card">
+      <div class="rm-card-h"><span>GBP</span></div>
+      <div class="rm-chart" id="snap-GBP" data-source="curves"></div>
+    </div>
+    <div class="rm-card">
+      <div class="rm-card-h"><span>JPY</span></div>
+      <div class="rm-chart" id="snap-JPY" data-source="curves"></div>
+    </div>
+      </div>
+    </section>
+    <section id="rv">
+      <div class="rm-sec-h"><h2>Curve and cross-market relative value</h2><p>Fly = 2×5y − 2y − 10y (negative = 5y rich). z vs the past year; |z| ≥ 1.5 highlighted.</p></div>
+      <div class="rm-grid-2">
+        <div class="rm-tw">
+          <table class="rm-table" id="rv-table" data-source="curve_rv" data-row-key="key">
+            <thead><tr><th class="t" data-field="economy"></th><th class="t" data-field="measure">Measure</th><th data-field="value_bp">bp</th><th data-field="chg_1w">Δ1w</th><th data-field="chg_1m">Δ1m</th><th data-field="z_1y">z 1y</th><th data-field="low_1y">1y low</th><th data-field="high_1y">1y high</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="rm-tw">
+          <table class="rm-table" id="spreads-table" data-source="spreads" data-row-key="name">
+            <thead><tr><th class="t" data-field="name">Spread</th><th data-field="value_bp">bp</th><th data-field="chg_1w_bp">Δ1w</th><th data-field="chg_1m_bp">Δ1m</th><th data-field="z_1y">z 1y</th><th data-field="low_1y">1y low</th><th data-field="high_1y">1y high</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    <section id="spread-hist">
+      <div class="rm-sec-h"><h2>Cross-market spreads, weekly (bp)</h2></div>
+      <div class="rm-card"><div class="rm-legend" id="spreads-legend"></div><div class="rm-chart" id="spreads-chart" data-source="spreads_hist" style="min-height:260px"></div></div>
+    </section>
+    <section id="yields">
+      <div class="rm-sec-h"><h2>2y, 10y and policy rate, two years</h2></div>
+      <div class="rm-legend" id="yields-legend"></div>
+      <div class="rm-grid">
+    <div class="rm-card">
+      <div class="rm-card-h"><span>USD</span></div>
+      <div class="rm-chart" id="yld-USD" data-source="yields_hist"></div>
+    </div>
+    <div class="rm-card">
+      <div class="rm-card-h"><span>EUR</span></div>
+      <div class="rm-chart" id="yld-EUR" data-source="yields_hist"></div>
+    </div>
+    <div class="rm-card">
+      <div class="rm-card-h"><span>GBP</span></div>
+      <div class="rm-chart" id="yld-GBP" data-source="yields_hist"></div>
+    </div>
+    <div class="rm-card">
+      <div class="rm-card-h"><span>JPY</span></div>
+      <div class="rm-chart" id="yld-JPY" data-source="yields_hist"></div>
+    </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- POLICY PRICING -->
+  <div class="rm-pane" id="pane-pricing" role="tabpanel" hidden>
+    <section id="boe">
+      <div class="rm-sec-h"><h2>Bank of England · meeting-by-meeting</h2><p>Expected Bank Rate after each MPC from the BoE OIS forward curve (average forward to the next meeting, adjusted for the SONIA–Bank Rate basis). Curve date <span data-source="boe_meetings" data-field="curve_date" data-row="0"></span>. Bars: cumulative bp; tick: 1 week earlier.</p></div>
+      <div class="rm-grid-2">
+        <div class="rm-card"><div class="rm-chart" id="boe-chart" data-source="boe_meetings" style="min-height:240px"></div></div>
+        <div class="rm-tw">
+          <table class="rm-table" id="boe-table" data-source="boe_meetings" data-row-key="date">
+            <thead><tr><th class="t" data-field="date">MPC</th><th data-field="implied_rate">Implied %</th><th data-field="change_bp">At mtg</th><th data-field="hike_odds_pct">25bp odds</th><th data-field="cumulative_bp">Cumul.</th><th data-field="cumulative_bp_1w">1w ago</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    <section id="paths">
+      <div class="rm-sec-h"><h2>Market-implied path vs policy rate</h2><p>bp above/below today's policy rate by months ahead. Solid: latest; dashed: 1 week earlier. Shared scale.</p></div>
+      <div class="rm-grid">
+    <div class="rm-card">
+      <div class="rm-card-h"><span>USD</span></div>
+      <div class="rm-chart" id="path-USD" data-source="implied_path overview"></div><p class="rm-note" data-source="overview" data-field="path_quality" data-where="economy=USD"></p>
+    </div>
+    <div class="rm-card">
+      <div class="rm-card-h"><span>EUR</span></div>
+      <div class="rm-chart" id="path-EUR" data-source="implied_path overview"></div><p class="rm-note" data-source="overview" data-field="path_quality" data-where="economy=EUR"></p>
+    </div>
+    <div class="rm-card">
+      <div class="rm-card-h"><span>GBP</span></div>
+      <div class="rm-chart" id="path-GBP" data-source="implied_path overview"></div><p class="rm-note" data-source="overview" data-field="path_quality" data-where="economy=GBP"></p>
+    </div>
+    <div class="rm-card">
+      <div class="rm-card-h"><span>JPY</span></div>
+      <div class="rm-chart" id="path-JPY" data-source="implied_path overview"></div><p class="rm-note" data-source="overview" data-field="path_quality" data-where="economy=JPY"></p>
+    </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- MACRO -->
+  <div class="rm-pane" id="pane-macro" role="tabpanel" hidden>
+    <section id="macro">
+      <div class="rm-sec-h"><h2>Inflation, labour and growth</h2><p>Latest print vs prior. Japan CPI pending a free e-Stat app ID.</p></div>
+      <div class="rm-grid-2">
+        <div class="rm-tw">
+          <table class="rm-table" id="macro-table" data-source="macro_latest" data-row-key="key">
+            <thead><tr><th class="t" data-field="economy"></th><th class="t" data-field="metric">Measure</th><th data-field="value">Latest</th><th data-field="prior">Prior</th><th data-field="change">Δ</th><th data-field="period">Period</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="rm-card">
+          <div class="rm-card-h"><span>Headline and core inflation, y/y %</span></div>
+          <div class="rm-legend" id="infl-legend"></div>
+          <div class="rm-chart" id="infl-USD" data-source="macro_hist" style="min-height:150px"></div>
+          <div class="rm-chart" id="infl-EUR" data-source="macro_hist" style="min-height:150px"></div>
+          <div class="rm-chart" id="infl-GBP" data-source="macro_hist" style="min-height:150px"></div>
+          <div class="rm-card-h" style="margin-top:10px"><span>Unemployment rate, %</span></div>
+          <div class="rm-chart" id="unemp-chart" data-source="macro_hist" style="min-height:180px"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- DATA HEALTH -->
+  <div class="rm-pane" id="pane-health" role="tabpanel" hidden>
+    <section id="health">
+      <div class="rm-sec-h"><h2>Data health</h2><p>Stale = older than the usual publication lag (daily 5 days, weekly 12, monthly 75, quarterly 200, from period end). Stale series first.</p></div>
+      <div class="rm-tw rm-scroll">
+        <table class="rm-table" id="health-table" data-source="data_health" data-row-key="series">
+          <thead><tr><th class="t" data-field="status">Status</th><th class="t" data-field="series">Series</th><th class="t" data-field="economy">Ccy</th><th class="t" data-field="name">Description</th><th class="t" data-field="source">Source</th><th class="t" data-field="frequency">Freq</th><th data-field="last_obs">Last obs</th><th data-field="age_days">Age (d)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <footer class="rm-foot">
+    <p>Sources: FRED, ECB Data Portal, Eurostat (HICP, ECOICOP 2), ONS, Bank of England (IADB, yield curves), Bank of Japan, Japan MoF. Refreshed twice daily (06:00 and 23:00 SGT).</p>
+    <p>USD, EUR and JPY policy paths are government-curve proxies carrying term premium and supply effects: read direction and shape, not exact bp. US y/y rates are computed on the calendar, so the missing Oct 2025 CPI does not distort them.</p>
   </footer>
 </div>
 
 <script>
+// freshness calc from data health (top level)
+  dash.calc('freshness', {
+    inputs: ['data_health'],
+    title: 'Series freshness',
+    description: 'How many collected series are within their usual publication lag.',
+    fn: (data_health) => [{ fresh: data_health.filter(r => r.status === 'OK').length, total: data_health.length }],
+  });
+
 (() => {
   const ECO = ['USD', 'EUR', 'GBP', 'JPY'];
   const C = dash.colors;
-  const sgn = (v, d = 0) => (v == null || isNaN(v)) ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(d);
-  const pct = (v, d = 2) => (v == null || isNaN(v)) ? '—' : v.toFixed(d) + '%';
-  const num = (v, d = 1) => (v == null || isNaN(v)) ? '—' : (v < 0 ? '−' : '') + Math.abs(v).toFixed(d);
+  const MINUS = '−';
+  const sgn = (v, d = 0) => (v == null || isNaN(v)) ? '—' : (v > 0 ? '+' : v < 0 ? MINUS : '') + Math.abs(v).toFixed(d);
+  const pct = (v, d = 2) => (v == null || isNaN(v)) ? '—' : Number(v).toFixed(d);
+  const num = (v, d = 1) => (v == null || isNaN(v)) ? '—' : (v < 0 ? MINUS : '') + Math.abs(v).toFixed(d);
   const fmtDate = d3.utcFormat('%-d %b %Y');
-  const parse = s => new Date(s + 'T00:00:00Z');
+  const fmtShort = d3.utcFormat('%-d %b');
+  const parse = s => new Date(String(s).slice(0, 10) + 'T00:00:00Z');
   const N = v => v == null ? null : Number(v);
+  const dirCls = v => v == null || v === 0 ? 'rm-flat' : v > 0 ? 'rm-up' : 'rm-dn';
 
-  // ---------- tabs
+  // tabs
   const renders = [];
-  const runAll = () => renders.forEach(fn => fn());
+  const runAll = () => renders.forEach(fn => { try { fn(); } catch (e) { console.error(e); } });
   const show = (name, push) => {
-    document.querySelectorAll('.g10-tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
-    document.querySelectorAll('.g10-pane').forEach(p => p.hidden = p.id !== 'pane-' + name);
+    document.querySelectorAll('.rm-tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
+    document.querySelectorAll('.rm-pane').forEach(p => p.hidden = p.id !== 'pane-' + name);
     if (push) dash.setLink('tab-' + name);
     runAll();
   };
-  document.querySelectorAll('.g10-tab').forEach(b => b.addEventListener('click', () => show(b.dataset.tab, true)));
+  document.querySelectorAll('.rm-tab').forEach(b => b.addEventListener('click', () => show(b.dataset.tab, true)));
   const h = location.hash.slice(1);
-  const startTab = h.startsWith('tab-') ? h.slice(4) : 'overview';
-  document.querySelectorAll('.g10-tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === startTab)));
-  document.querySelectorAll('.g10-pane').forEach(p => p.hidden = p.id !== 'pane-' + startTab);
+  const startTab = h.startsWith('tab-') && document.getElementById('pane-' + h.slice(4)) ? h.slice(4) : 'overview';
+  document.querySelectorAll('.rm-tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === startTab)));
+  document.querySelectorAll('.rm-pane').forEach(p => p.hidden = p.id !== 'pane-' + startTab);
 
-  // ---------- helpers
-  const failBox = el => { el.innerHTML = ''; const d = document.createElement('div'); d.className = 'g10-fail'; d.textContent = 'Failed to load'; el.appendChild(d); };
+  // helpers
+  const failBox = el => { el.innerHTML = ''; const d = document.createElement('div'); d.className = 'rm-fail'; d.textContent = 'Failed to load'; el.appendChild(d); };
   const bad = st => st === 'error' || st === 'missing' || st === 'declined';
   const td = (tr, text, cls) => { const c = document.createElement('td'); c.textContent = text; if (cls) c.className = cls; tr.appendChild(c); return c; };
   const legend = (id, items) => {
@@ -362,6 +382,20 @@
     items.forEach(([name, color, dash]) => { const s = document.createElement('span'); const i = document.createElement('i'); i.style.background = dash ? 'none' : color; if (dash) i.style.borderTop = `2px dashed ${color}`; s.appendChild(i); s.appendChild(document.createTextNode(name)); el.appendChild(s); });
   };
   const visible = el => el && el.offsetParent !== null;
+
+  function spark(el, vals, w, h) {
+    el.innerHTML = '';
+    const v = (vals || []).map(Number).filter(x => !isNaN(x));
+    if (v.length < 2) return;
+    const W = w || Math.max(60, el.clientWidth || 120), H = h || 26;
+    const x = d3.scaleLinear().domain([0, v.length - 1]).range([1, W - 3]);
+    const y = d3.scaleLinear().domain(d3.extent(v)).range([H - 3, 3]);
+    const up = v[v.length - 1] >= v[0];
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'none').attr('aria-hidden', 'true');
+    svg.append('path').datum(v).attr('fill', 'none').attr('stroke', up ? 'var(--color-bad)' : 'var(--color-ok)').attr('stroke-width', 1.25)
+      .attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round').attr('vector-effect', 'non-scaling-stroke').attr('d', d3.line().x((d, i) => x(i)).y(d => y(d)));
+    svg.append('circle').attr('cx', x(v.length - 1)).attr('cy', y(v[v.length - 1])).attr('r', 1.8).attr('fill', up ? 'var(--color-bad)' : 'var(--color-ok)');
+  }
 
   function lineChart(el, series, opt) {
     el.innerHTML = '';
@@ -372,15 +406,16 @@
     const y = d3.scaleLinear().domain(opt.yDomain || d3.extent(all, p => p.y)).nice();
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', opt.label || 'chart');
     const yTicks = y.ticks(4);
-    const tmp = svg.append('text').attr('font-size', 11).text(yTicks.map(opt.yFmt).reduce((a, b) => a.length > b.length ? a : b, ''));
+    const tmp = svg.append('text').attr('font-size', 10.5).text(yTicks.map(opt.yFmt).reduce((a, b) => a.length > b.length ? a : b, ''));
     const yw = tmp.node().getComputedTextLength(); tmp.remove();
-    const mg = { t: 8, r: opt.endLabels ? 72 : 12, b: 22, l: yw + 10 };
+    const mg = { t: 8, r: opt.endLabels ? 74 : 12, b: 22, l: yw + 10 };
     x.range([mg.l, W - mg.r]); y.range([H - mg.b, mg.t]);
     const g = svg.append('g');
     g.append('g').selectAll('line').data(yTicks).join('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
-    g.append('g').selectAll('text').data(yTicks).join('text').attr('x', mg.l - 6).attr('y', d => y(d) + 4).attr('text-anchor', 'end').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text(opt.yFmt);
+    g.append('g').selectAll('text').data(yTicks).join('text').attr('x', mg.l - 6).attr('y', d => y(d) + 4).attr('text-anchor', 'end').attr('font-size', 10.5).attr('fill', 'var(--color-fg-muted)').text(opt.yFmt);
     const xTicks = opt.xTicks || x.ticks(Math.max(2, Math.floor((W - mg.l - mg.r) / 90)));
-    g.append('g').selectAll('text').data(xTicks).join('text').attr('x', x).attr('y', H - 6).attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text(opt.xFmt);
+    g.append('g').selectAll('text').data(xTicks).join('text').attr('x', x).attr('y', H - 6).attr('text-anchor', 'middle').attr('font-size', 10.5).attr('fill', 'var(--color-fg-muted)').text(opt.xFmt);
+    g.append('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', H - mg.b).attr('y2', H - mg.b).attr('stroke', 'var(--cds-chart-axis)');
     if (opt.zero && y.domain()[0] < 0 && y.domain()[1] > 0)
       g.append('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', 'var(--cds-chart-axis)');
     series.forEach(s => {
@@ -392,9 +427,9 @@
     if (opt.endLabels) {
       const ends = series.map(s => ({ s, p: s.points.filter(p => p.y != null).slice(-1)[0] })).filter(e => e.p).map(e => ({ ...e, ty: y(e.p.y) })).sort((a, b) => a.ty - b.ty);
       for (let i = 1; i < ends.length; i++) if (ends[i].ty - ends[i - 1].ty < 13) ends[i].ty = ends[i - 1].ty + 13;
-      ends.forEach(e => g.append('text').attr('x', W - mg.r + 6).attr('y', e.ty + 4).attr('font-size', 11).attr('fill', e.s.color).text(e.s.short + ' ' + opt.yFmt(e.p.y)));
+      ends.forEach(e => g.append('text').attr('x', W - mg.r + 6).attr('y', e.ty + 4).attr('font-size', 10.5).attr('fill', e.s.color).text(e.s.short + ' ' + opt.yFmt(e.p.y)));
     }
-    const tip = document.createElement('div'); tip.className = 'g10-tip'; el.appendChild(tip);
+    const tip = document.createElement('div'); tip.className = 'rm-tip'; el.appendChild(tip);
     const rule = g.append('line').attr('y1', mg.t).attr('y2', H - mg.b).attr('stroke', 'var(--cds-chart-axis)').style('display', 'none');
     const dots = series.map(s => g.append('circle').attr('r', 4).attr('fill', s.color).style('display', 'none'));
     svg.append('rect').attr('x', mg.l).attr('y', mg.t).attr('width', W - mg.l - mg.r).attr('height', H - mg.t - mg.b).attr('fill', 'transparent')
@@ -408,7 +443,7 @@
         rows.forEach(r => dots[series.indexOf(r.s)].attr('cx', x(r.p.x)).attr('cy', y(r.p.y)).style('display', null));
         tip.innerHTML = '';
         const dd = document.createElement('div'); dd.className = 'd'; dd.textContent = opt.tipX(rows[rows.length - 1].p.x, rows[rows.length - 1].p); tip.appendChild(dd);
-        rows.forEach(r => { const line = document.createElement('div'); const sw = document.createElement('span'); sw.className = 'sw'; sw.style.background = r.s.color; line.appendChild(sw); line.appendChild(document.createTextNode(r.s.name + '  ' + opt.yFmt(r.p.y))); tip.appendChild(line); });
+        rows.slice().reverse().forEach(r => { const line = document.createElement('div'); const sw = document.createElement('span'); sw.className = 'sw'; sw.style.background = r.s.color; line.appendChild(sw); line.appendChild(document.createTextNode(r.s.name + '  ' + opt.yFmt(r.p.y))); tip.appendChild(line); });
         tip.style.display = 'block';
         const sc = el.clientWidth / W;
         let left = px * sc + 12; if (left + tip.offsetWidth > el.clientWidth) left = px * sc - tip.offsetWidth - 12;
@@ -417,23 +452,19 @@
       .on('mouseleave', () => { tip.style.display = 'none'; rule.style('display', 'none'); dots.forEach(d => d.style('display', 'none')); });
   }
 
-  // ---------- header + cards
+  // ---------- header, reads, freshness
   renders.push(() => {
-    const ov = dash.data('overview'), cal = dash.data('calendar'), bm = dash.data('boe_meetings');
+    const ov = dash.data('overview'), cal = dash.data('calendar'), bm = dash.data('boe_meetings'), fr = dash.data('freshness');
     if (ov.status === 'ok') {
       const by = Object.fromEntries(ov.data.map(r => [r.economy, r]));
-      document.querySelectorAll('[data-source="overview"][data-field]').forEach(el => {
+      document.querySelectorAll('[data-source="overview"][data-field][data-where]').forEach(el => {
         const r = by[(el.dataset.where || '').split('=')[1]]; if (!r) return;
         const f = el.dataset.field, v = r[f];
-        el.classList.remove('dash-skeleton');
-        if (/_chg_|priced_12m_bp|priced_chg/.test(f)) el.textContent = sgn(N(v));
-        else if (f === 'policy') el.textContent = pct(N(v), Math.round(N(v) * 1000) % 10 ? 3 : 2);
-        else if (['y2', 'y10', 'ylong'].includes(f)) el.textContent = pct(N(v));
-        else if (f === 's2s10s') el.textContent = sgn(N(v)) + 'bp';
-        else if (f === 'next_meeting' || f.endsWith('_date')) el.textContent = v ? fmtDate(parse(v)) : '—';
+        if (f === 'priced_12m_bp') el.textContent = sgn(N(v));
+        else if (f.endsWith('_date')) el.textContent = v ? fmtDate(parse(v)) : '—';
         else el.textContent = v ?? '—';
       });
-    } else if (ov.status !== 'loading') document.querySelectorAll('.g10-big').forEach(el => { el.classList.remove('dash-skeleton'); el.textContent = '—'; });
+    }
     if (cal.status === 'ok' && cal.data.length) {
       const r0 = cal.data[0];
       document.querySelectorAll('[data-source="calendar"][data-row="0"]').forEach(el => el.textContent = r0[el.dataset.field]);
@@ -442,40 +473,74 @@
       const r0 = bm.data[0];
       document.querySelectorAll('[data-source="boe_meetings"][data-row="0"]').forEach(el => {
         const f = el.dataset.field;
-        el.textContent = f === 'change_bp' ? sgn(N(r0[f]), 1) : fmtDate(parse(r0[f]));
+        el.textContent = f === 'change_bp' ? sgn(N(r0[f]), 1) : f === 'hike_odds_pct' ? String(N(r0[f])) : fmtDate(parse(r0[f]));
       });
+    }
+    const pill = document.getElementById('fresh-pill');
+    if (fr.status === 'ok' && fr.data.length) {
+      const r = fr.data[0];
+      document.querySelector('[data-source="freshness"][data-field="fresh"]').textContent = String(r.fresh);
+      document.querySelector('[data-source="freshness"][data-field="total"]').textContent = String(r.total);
+      pill.style.setProperty('--rm-pill', r.fresh === r.total ? 'var(--color-ok)' : 'var(--color-warn)');
     }
   });
 
-  // ---------- rates grid heatmap
-  const CAP = { chg_1d: 15, chg_1w: 25, chg_1m: 40, chg_3m: 60, chg_ytd: 100 };
-  const heat = (v, cap) => {
-    if (v == null || v === 0) return '';
-    const a = Math.round(Math.min(1, Math.abs(v) / cap) * 45);
-    return `color-mix(in srgb, ${v > 0 ? C[1] : C[0]} ${a}%, transparent)`;
-  };
+  // ---------- market strip
   renders.push(() => {
-    const key = document.getElementById('heat-key'); key.innerHTML = '';
-    [['yields up', C[1]], ['yields down', C[0]]].forEach(([t, c], i) => { const s = document.createElement('span'); s.textContent = t; s.style.background = `color-mix(in srgb, ${c} 35%, transparent)`; s.style.padding = '0 4px'; s.style.borderRadius = '3px'; if (i) key.appendChild(document.createTextNode(' / ')); key.appendChild(s); });
-    const gd = dash.data('rates_grid');
-    const tb = document.querySelector('#grid-table tbody');
-    if (gd.status !== 'ok') return;
-    tb.innerHTML = '';
+    const gd = dash.data('rates_grid'); if (gd.status !== 'ok') return;
+    const by = Object.fromEntries(gd.data.map(r => [r.key, r]));
+    document.querySelectorAll('.rm-tile').forEach(t => {
+      const lv = t.querySelector('[data-field="level"]'), ch = t.querySelector('[data-field="chg_1d"]'), sp = t.querySelector('.rm-spark');
+      const r = by[lv.dataset.where.slice(4)]; if (!r) return;
+      lv.classList.remove('dash-skeleton');
+      lv.textContent = pct(N(r.level));
+      ch.textContent = sgn(N(r.chg_1d));
+      ch.className = 'rm-tile-c rm-num ' + dirCls(N(r.chg_1d));
+      if (visible(sp)) spark(sp, r.spark, sp.clientWidth, 26);
+    });
+  });
+
+  // ---------- central bank board
+  renders.push(() => {
+    const ov = dash.data('overview'); if (ov.status !== 'ok') return;
+    const tb = document.querySelector('#board-table tbody'); tb.innerHTML = '';
+    ov.data.forEach(r => {
+      const tr = document.createElement('tr');
+      td(tr, r.economy, 't rm-eco'); td(tr, r.cb, 't');
+      td(tr, pct(N(r.policy), Math.round(N(r.policy) * 1000) % 10 ? 3 : 2));
+      td(tr, r.next_meeting ? fmtShort(parse(r.next_meeting)) + ' · ' + (r.next_meeting_sgt || '') : '—', 't');
+      const dc = td(tr, r.days_to_meeting == null ? '—' : String(N(r.days_to_meeting))); if (N(r.days_to_meeting) <= 7) dc.classList.add('rm-warn', 'rm-strong');
+      td(tr, sgn(N(r.priced_12m_bp)), 'rm-strong'); td(tr, sgn(N(r.priced_chg_1w_bp)), 'rm-flat');
+      td(tr, pct(N(r.y2))); td(tr, sgn(N(r.y2_chg_1d)), dirCls(N(r.y2_chg_1d)));
+      td(tr, pct(N(r.y10))); td(tr, sgn(N(r.y10_chg_1d)), dirCls(N(r.y10_chg_1d)));
+      td(tr, sgn(N(r.s2s10s))); td(tr, sgn(N(r.s2s10s_chg_1w)), 'rm-flat');
+      tb.appendChild(tr);
+    });
+  });
+
+  // ---------- rates grid
+  const CAP = { chg_1d: 15, chg_1w: 25, chg_1m: 40, chg_3m: 60, chg_ytd: 100 };
+  const heat = (v, cap) => (v == null || v === 0) ? '' : `color-mix(in srgb, ${v > 0 ? 'var(--color-bad)' : 'var(--color-ok)'} ${Math.round(Math.min(1, Math.abs(v) / cap) * 28)}%, transparent)`;
+  renders.push(() => {
+    const gd = dash.data('rates_grid'); if (gd.status !== 'ok') return;
+    const tb = document.querySelector('#grid-table tbody'); tb.innerHTML = '';
     let last = null;
     gd.data.forEach(r => {
       const tr = document.createElement('tr'); tr.dataset.key = r.key;
-      if (last && r.economy !== last) tr.className = 'g10-grp';
-      td(tr, r.economy !== last ? r.economy : '', 'l g10-eco-cell');
-      td(tr, r.instrument, 'l');
-      td(tr, N(r.level).toFixed(2));
-      ['chg_1d', 'chg_1w', 'chg_1m', 'chg_3m', 'chg_ytd'].forEach(f => { const c = td(tr, sgn(N(r[f]))); c.style.background = heat(N(r[f]), CAP[f]); c.classList.add('g10-heat'); });
-      const pc = td(tr, ''); const wrap = document.createElement('span'); wrap.className = 'g10-rng';
-      const track = document.createElement('span'); track.className = 'g10-rng-track'; const dot = document.createElement('span'); dot.className = 'g10-rng-dot'; dot.style.left = `calc(${N(r.pct_1y)}% - 1px)`; track.appendChild(dot);
-      wrap.appendChild(track); wrap.appendChild(document.createTextNode(String(N(r.pct_1y)))); pc.appendChild(wrap);
-      if (N(r.pct_1y) >= 90 || N(r.pct_1y) <= 10) pc.classList.add('g10-warn');
-      td(tr, d3.utcFormat('%-d %b')(parse(r.date)));
+      if (last && r.economy !== last) tr.className = 'rm-grp';
+      td(tr, r.economy !== last ? r.economy : '', 't rm-eco');
+      td(tr, r.instrument, 't');
+      td(tr, pct(N(r.level)), 'rm-strong');
+      const sc = td(tr, ''); const sp = document.createElement('span'); sp.className = 'rm-cellspark'; sc.appendChild(sp);
+      ['chg_1d', 'chg_1w', 'chg_1m', 'chg_3m', 'chg_ytd'].forEach(f => { const c = td(tr, sgn(N(r[f])), dirCls(N(r[f]))); c.style.background = heat(N(r[f]), CAP[f]); });
+      const pc = td(tr, ''); const wrap = document.createElement('span'); wrap.className = 'rm-rng';
+      const track = document.createElement('span'); track.className = 'rm-rng-track'; const dot = document.createElement('span'); dot.className = 'rm-rng-dot'; dot.style.left = `calc(${N(r.pct_1y)}% - 1px)`; track.appendChild(dot);
+      const lab = document.createElement('span'); lab.textContent = String(N(r.pct_1y)); if (N(r.pct_1y) >= 90 || N(r.pct_1y) <= 10) lab.className = 'rm-warn';
+      wrap.appendChild(track); wrap.appendChild(lab); pc.appendChild(wrap);
+      td(tr, fmtShort(parse(r.date)), 'rm-flat');
       last = r.economy;
       tb.appendChild(tr);
+      if (visible(tb)) spark(sp, r.spark, 72, 16);
     });
   });
 
@@ -483,7 +548,7 @@
   renders.push(() => {
     const cal = dash.data('calendar'); if (cal.status !== 'ok') return;
     const tb = document.querySelector('#cal-table tbody'); tb.innerHTML = '';
-    cal.data.forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.key; td(tr, fmtDate(parse(r.date)), 'l'); td(tr, r.cb, 'l'); td(tr, r.economy, 'l'); td(tr, r.sgt, 'l'); tb.appendChild(tr); });
+    cal.data.forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.key; td(tr, fmtDate(parse(r.date)), 't'); td(tr, r.cb, 't rm-strong'); td(tr, r.economy, 't'); td(tr, r.sgt, 't'); tb.appendChild(tr); });
   });
 
   // ---------- curve snapshots
@@ -498,31 +563,31 @@
       const all = cv.data.flatMap(r => [N(r.now), N(r.wk), N(r.mo)]).filter(v => v != null);
       const mk = f => rows.map(r => ({ x: r.years, y: N(r[f]), label: r.tenor }));
       lineChart(el, [
-        { name: '1 month ago', color: 'var(--cds-chart-muted)', width: 1.5, points: mk('mo') },
-        { name: '1 week ago', color: 'var(--cds-chart-muted)', dash: '4 3', width: 1.5, points: mk('wk') },
+        { name: '1m ago', color: 'var(--cds-chart-muted)', width: 1.5, points: mk('mo') },
+        { name: '1w ago', color: 'var(--cds-chart-muted)', dash: '4 3', width: 1.5, points: mk('wk') },
         { name: 'Today', color: C[0], dots: true, points: mk('now') },
       ], { xType: 'log', xDomain: [d3.min(cv.data, r => N(r.years)), 30], xTicks: rows.map(r => r.years), xFmt: v => (rows.find(r => r.years === v) || {}).tenor || '',
-            yDomain: [Math.min(0, d3.min(all)), d3.max(all)], yFmt: v => v.toFixed(1) + '%', tipX: (v, p) => p.label, label: e + ' curve snapshot' });
+           yDomain: [Math.min(0, d3.min(all)), d3.max(all)], yFmt: v => v.toFixed(1) + '%', tipX: (v, p) => e + ' ' + p.label, label: e + ' curve snapshot' });
     });
   });
 
-  // ---------- RV + spreads tables
-  const zCls = z => Math.abs(z) >= 1.5 ? 'g10-warn' : '';
+  // ---------- RV + spreads
+  const zCls = z => Math.abs(z) >= 1.5 ? 'rm-warn rm-strong' : '';
   renders.push(() => {
     const rv = dash.data('curve_rv');
     if (rv.status === 'ok') {
       const tb = document.querySelector('#rv-table tbody'); tb.innerHTML = ''; let last = null;
       rv.data.forEach(r => {
-        const tr = document.createElement('tr'); tr.dataset.key = r.key; if (last && r.economy !== last) tr.className = 'g10-grp';
-        td(tr, r.economy !== last ? r.economy : '', 'l g10-eco-cell'); td(tr, r.measure, 'l');
-        td(tr, sgn(N(r.value_bp))); td(tr, sgn(N(r.chg_1w))); td(tr, sgn(N(r.chg_1m))); td(tr, num(N(r.z_1y), 1), zCls(N(r.z_1y))); td(tr, sgn(N(r.low_1y))); td(tr, sgn(N(r.high_1y)));
+        const tr = document.createElement('tr'); tr.dataset.key = r.key; if (last && r.economy !== last) tr.className = 'rm-grp';
+        td(tr, r.economy !== last ? r.economy : '', 't rm-eco'); td(tr, r.measure, 't');
+        td(tr, sgn(N(r.value_bp)), 'rm-strong'); td(tr, sgn(N(r.chg_1w)), 'rm-flat'); td(tr, sgn(N(r.chg_1m)), 'rm-flat'); td(tr, num(N(r.z_1y), 1), zCls(N(r.z_1y))); td(tr, sgn(N(r.low_1y)), 'rm-flat'); td(tr, sgn(N(r.high_1y)), 'rm-flat');
         last = r.economy; tb.appendChild(tr);
       });
     }
     const sp = dash.data('spreads');
     if (sp.status === 'ok') {
       const tb = document.querySelector('#spreads-table tbody'); tb.innerHTML = '';
-      sp.data.forEach(r => { const tr = document.createElement('tr'); td(tr, r.name, 'l'); td(tr, sgn(N(r.value_bp))); td(tr, sgn(N(r.chg_1w_bp))); td(tr, sgn(N(r.chg_1m_bp))); td(tr, num(N(r.z_1y), 1), zCls(N(r.z_1y))); td(tr, sgn(N(r.low_1y))); td(tr, sgn(N(r.high_1y))); tb.appendChild(tr); });
+      sp.data.forEach(r => { const tr = document.createElement('tr'); td(tr, r.name, 't'); td(tr, sgn(N(r.value_bp)), 'rm-strong'); td(tr, sgn(N(r.chg_1w_bp)), 'rm-flat'); td(tr, sgn(N(r.chg_1m_bp)), 'rm-flat'); td(tr, num(N(r.z_1y), 1), zCls(N(r.z_1y))); td(tr, sgn(N(r.low_1y)), 'rm-flat'); td(tr, sgn(N(r.high_1y)), 'rm-flat'); tb.appendChild(tr); });
     }
   });
 
@@ -548,14 +613,14 @@
     ECO.forEach(e => {
       const pts = name => yh.data.filter(r => r.economy === e && r.series === name).map(r => ({ x: parse(r.date), y: N(r.value) }));
       lineChart(document.getElementById('yld-' + e), [
-        { name: 'Policy rate', color: 'var(--cds-chart-muted)', step: true, width: 1.5, points: pts('Policy rate') },
+        { name: 'Policy', color: 'var(--cds-chart-muted)', step: true, width: 1.5, points: pts('Policy rate') },
         { name: '10y', color: C[1], width: 1.5, points: pts('10y') },
         { name: '2y', color: C[0], width: 1.5, points: pts('2y') },
       ], { yDomain, yFmt: v => v.toFixed(1) + '%', xFmt: d3.utcFormat("%b '%y"), tipX: fmtDate, label: e + ' yields' });
     });
   });
 
-  // ---------- BoE meeting strip
+  // ---------- BoE strip
   renders.push(() => {
     const bm = dash.data('boe_meetings'), el = document.getElementById('boe-chart');
     if (bad(bm.status)) return failBox(el);
@@ -563,36 +628,36 @@
     const tb = document.querySelector('#boe-table tbody'); tb.innerHTML = '';
     bm.data.forEach(r => {
       const tr = document.createElement('tr'); tr.dataset.key = r.date;
-      td(tr, d3.utcFormat('%-d %b %y')(parse(r.date)), 'l'); td(tr, N(r.implied_rate).toFixed(2)); td(tr, sgn(N(r.change_bp), 1));
-      td(tr, String(N(r.hike_odds_pct))); td(tr, sgn(N(r.cumulative_bp))); td(tr, r.cumulative_bp_1w == null ? '—' : sgn(N(r.cumulative_bp_1w)));
+      td(tr, d3.utcFormat('%-d %b %y')(parse(r.date)), 't'); td(tr, N(r.implied_rate).toFixed(2), 'rm-strong'); td(tr, sgn(N(r.change_bp), 1));
+      td(tr, String(N(r.hike_odds_pct)) + '%'); td(tr, sgn(N(r.cumulative_bp))); td(tr, r.cumulative_bp_1w == null ? '—' : sgn(N(r.cumulative_bp_1w)), 'rm-flat');
       tb.appendChild(tr);
     });
     if (!visible(el)) return;
     el.innerHTML = '';
-    const W = Math.max(280, el.clientWidth), H = 240, mg = { t: 18, r: 8, b: 26, l: 36 };
+    const W = Math.max(280, el.clientWidth), H = 240, mg = { t: 18, r: 8, b: 26, l: 40 };
     const x = d3.scaleBand().domain(bm.data.map(r => r.date)).range([mg.l, W - mg.r]).padding(0.3);
     const vals = bm.data.flatMap(r => [N(r.cumulative_bp), N(r.cumulative_bp_1w)]).filter(v => v != null);
     const y = d3.scaleLinear().domain([Math.min(0, d3.min(vals)), Math.max(0, d3.max(vals))]).nice().range([H - mg.b, mg.t]);
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'BoE cumulative pricing by meeting');
     svg.append('g').selectAll('line').data(y.ticks(4)).join('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
-    svg.append('g').selectAll('text').data(y.ticks(4)).join('text').attr('x', mg.l - 6).attr('y', d => y(d) + 4).attr('text-anchor', 'end').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text(d => sgn(d));
+    svg.append('g').selectAll('text').data(y.ticks(4)).join('text').attr('x', mg.l - 6).attr('y', d => y(d) + 4).attr('text-anchor', 'end').attr('font-size', 10.5).attr('fill', 'var(--color-fg-muted)').text(d => sgn(d));
     svg.append('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', 'var(--cds-chart-axis)');
-    const bw = Math.min(32, x.bandwidth());
-    const off = (x.bandwidth() - bw) / 2;
+    const bw = Math.min(30, x.bandwidth()), off = (x.bandwidth() - bw) / 2;
     svg.append('g').selectAll('rect').data(bm.data).join('rect').attr('x', r => x(r.date) + off).attr('width', bw)
-      .attr('y', r => y(Math.max(0, N(r.cumulative_bp)))).attr('height', r => Math.abs(y(N(r.cumulative_bp)) - y(0))).attr('rx', 4).attr('fill', C[0]);
+      .attr('y', r => y(Math.max(0, N(r.cumulative_bp)))).attr('height', r => Math.abs(y(N(r.cumulative_bp)) - y(0))).attr('rx', 3).attr('fill', C[0]);
     svg.append('g').selectAll('line.wk').data(bm.data.filter(r => r.cumulative_bp_1w != null)).join('line').attr('x1', r => x(r.date) + off - 3).attr('x2', r => x(r.date) + off + bw + 3)
       .attr('y1', r => y(N(r.cumulative_bp_1w))).attr('y2', r => y(N(r.cumulative_bp_1w))).attr('stroke', 'var(--color-fg)').attr('stroke-width', 2);
     if (bw >= 22) svg.append('g').selectAll('text.v').data(bm.data).join('text').attr('x', r => x(r.date) + x.bandwidth() / 2).attr('y', r => y(Math.max(0, N(r.cumulative_bp))) - 5)
-      .attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', 'var(--color-fg)').text(r => sgn(N(r.cumulative_bp)));
+      .attr('text-anchor', 'middle').attr('font-size', 10.5).attr('fill', 'var(--color-fg)').text(r => sgn(N(r.cumulative_bp)));
     const every = Math.ceil(bm.data.length / Math.max(1, Math.floor((W - mg.l) / 56)));
     svg.append('g').selectAll('text.x').data(bm.data.filter((r, i) => i % every === 0)).join('text').attr('x', r => x(r.date) + x.bandwidth() / 2).attr('y', H - 8)
-      .attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text(r => d3.utcFormat("%b '%y")(parse(r.date)));
+      .attr('text-anchor', 'middle').attr('font-size', 10.5).attr('fill', 'var(--color-fg-muted)').text(r => d3.utcFormat("%b '%y")(parse(r.date)));
   });
 
-  // ---------- implied path small multiples
+  // ---------- implied paths
   renders.push(() => {
-    const ip = dash.data('implied_path');
+    const ip = dash.data('implied_path'), ov = dash.data('overview');
+    if (ov.status === 'ok') document.querySelectorAll('p[data-field="path_quality"]').forEach(p => { const r = ov.data.find(x => x.economy === p.dataset.where.split('=')[1]); if (r) p.textContent = r.path_quality; });
     ECO.forEach(e => {
       const el = document.getElementById('path-' + e);
       if (bad(ip.status)) return failBox(el);
@@ -601,10 +666,10 @@
       const allv = ip.data.flatMap(r => [N(r.vs_policy_bp), N(r.vs_policy_bp_1w)]).filter(v => v != null);
       const start = { x: 0, y: 0 };
       lineChart(el, [
-        { name: '1 week earlier', color: 'var(--cds-chart-muted)', dash: '4 4', points: [start, ...rows.filter(r => r.wk != null).map(r => ({ x: r.m, y: r.wk }))] },
+        { name: '1w earlier', color: 'var(--cds-chart-muted)', dash: '4 4', points: [start, ...rows.filter(r => r.wk != null).map(r => ({ x: r.m, y: r.wk }))] },
         { name: 'Latest', color: C[0], dots: true, points: [start, ...rows.map(r => ({ x: r.m, y: r.now }))] },
       ], { xType: 'linear', xDomain: [0, 24], xTicks: [0, 6, 12, 18, 24], xFmt: d => d + 'm', yDomain: [Math.min(0, d3.min(allv)) - 10, Math.max(0, d3.max(allv)) + 10], yFmt: v => sgn(v), zero: true,
-            tipX: v => v + ' months ahead', label: e + ' market-implied path' });
+           tipX: v => v + ' months ahead', label: e + ' market-implied path' });
     });
   });
 
@@ -614,11 +679,11 @@
     if (ml.status === 'ok') {
       const tb = document.querySelector('#macro-table tbody'); tb.innerHTML = ''; let last = null;
       ml.data.forEach(r => {
-        const tr = document.createElement('tr'); tr.dataset.key = r.key; if (last && r.economy !== last) tr.className = 'g10-grp';
+        const tr = document.createElement('tr'); tr.dataset.key = r.key; if (last && r.economy !== last) tr.className = 'rm-grp';
         const dec = v => String(v ?? '').includes('.') ? String(v).split('.')[1].length : 0;
         const d = Math.min(2, Math.max(dec(r.value), dec(r.prior)));
-        td(tr, r.economy !== last ? r.economy : '', 'l g10-eco-cell'); td(tr, r.metric, 'l'); td(tr, num(N(r.value), d)); td(tr, r.prior == null ? '—' : num(N(r.prior), d));
-        td(tr, r.change == null ? '—' : sgn(N(r.change), d)); td(tr, d3.utcFormat('%b %Y')(parse(r.period)));
+        td(tr, r.economy !== last ? r.economy : '', 't rm-eco'); td(tr, r.metric, 't'); td(tr, num(N(r.value), d), 'rm-strong'); td(tr, r.prior == null ? '—' : num(N(r.prior), d), 'rm-flat');
+        td(tr, r.change == null ? '—' : sgn(N(r.change), d)); td(tr, d3.utcFormat('%b %Y')(parse(r.period)), 'rm-flat');
         last = r.economy; tb.appendChild(tr);
       });
     }
@@ -642,8 +707,8 @@
     const tb = document.querySelector('#health-table tbody'); tb.innerHTML = '';
     dh.data.forEach(r => {
       const tr = document.createElement('tr'); tr.dataset.key = r.series;
-      td(tr, r.status, 'l ' + (r.status === 'Stale' ? 'g10-bad' : 'g10-ok')); td(tr, r.series, 'l'); td(tr, r.economy, 'l'); td(tr, r.name, 'l'); td(tr, r.source, 'l'); td(tr, r.frequency, 'l');
-      td(tr, fmtDate(parse(r.last_obs))); td(tr, String(N(r.age_days)));
+      td(tr, r.status, 't ' + (r.status === 'Stale' ? 'rm-bad' : 'rm-ok')); td(tr, r.series, 't'); td(tr, r.economy, 't'); td(tr, r.name, 't'); td(tr, r.source, 't'); td(tr, r.frequency, 't');
+      td(tr, fmtDate(parse(r.last_obs))); td(tr, String(N(r.age_days)), r.status === 'Stale' ? 'rm-bad' : '');
       tb.appendChild(tr);
     });
   });
