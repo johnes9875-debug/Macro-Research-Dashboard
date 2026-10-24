@@ -37,7 +37,7 @@ series:
   - {id: EA_HICP_NRG,   economy: EUR, name: HICP energy,               source: eurostat_hicp, code: NRG,            freq: M, transform: level, tier: 2}
   - {id: EA_HICP_NEIG,  economy: EUR, name: HICP non-energy industrial goods, source: eurostat_hicp, code: IGD_NNRG, freq: M, transform: level, tier: 2}
   - {id: EA_UNEMP,      economy: EUR, name: Unemployment rate,         source: ecb, code: LFSI/M.I9.S.UNEHRT.TOTAL0.15_74.T, freq: M, transform: level, tier: 1}
-  - {id: EA_GDP,        economy: EUR, name: Real GDP q/q,              source: ecb, code: MNA/Q.Y.I9.W2.S1.S1.B.B1GQ._Z._Z._Z.EUR.LR.GY, freq: Q, transform: level, tier: 1}
+  - {id: EA_GDP,        economy: EUR, name: Real GDP y/y (euro area 21),              source: ecb, code: MNA/Q.Y.I10.W2.S1.S1.B.B1GQ._Z._Z._Z.EUR.LR.GY, freq: Q, transform: level, tier: 1}
   - {id: EA_DFR,        economy: EUR, name: ECB deposit facility rate, source: ecb, code: FM/D.U2.EUR.4F.KR.DFR.LEV, freq: D, transform: level}
   - {id: EA_ESTR,       economy: EUR, name: €STR,                      source: ecb, code: EST/B.EU000A2X2A25.WT,    freq: D, transform: level}
   - {id: EA_3M,         economy: EUR, name: AAA curve 3m,              source: ecb, code: YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_3M,  freq: D, transform: level, tenor: 0.25}
