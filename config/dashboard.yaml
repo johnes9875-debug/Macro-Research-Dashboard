@@ -1,0 +1,16 @@
+# The published dashboard and the dataset each output file feeds.
+url: https://claude.ai/artifact/8VBhFWt58ENy8cF3T7Ptrt
+datasets:
+  - overview
+  - implied_path
+  - yields_hist
+  - spreads
+  - spreads_hist
+  - macro_latest
+  - macro_hist
+  - calendar
+  - rates_grid
+  - curves
+  - curve_rv
+  - boe_meetings
+  - data_health

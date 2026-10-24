@@ -1,0 +1,262 @@
+"""Turn data/latest.parquet into data/outputs/dashboard.json for the dashboard.
+
+All arithmetic happens here; the dashboard only displays these numbers.
+Run: python src/compute.py
+"""
+from __future__ import annotations
+
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import yaml
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "data" / "outputs"
+OUT.mkdir(parents=True, exist_ok=True)
+
+D = pd.read_parquet(ROOT / "data" / "latest.parquet")
+REG = {s["id"]: s for s in yaml.safe_load((ROOT / "config" / "series.yaml").read_text())["series"]}
+CAL = yaml.safe_load((ROOT / "config" / "calendar.yaml").read_text())["meetings"]
+
+
+def s(sid: str) -> pd.Series:
+    x = D[D.series_id == sid].set_index("date")["value"].sort_index()
+    if x.empty:
+        raise KeyError(sid)
+    # Put monthly/quarterly series on a regular calendar so a missing release
+    # (e.g. US CPI for Oct 2025, never published after the shutdown) leaves a gap
+    # instead of shifting every y/y comparison by one period.
+    freq = REG.get(sid, {}).get("freq")
+    if freq == "M":
+        x = x.asfreq("MS")
+    elif freq == "Q":
+        x = x.asfreq("QS")
+    return x
+
+
+def r2(x, n=2):
+    return None if x is None or (isinstance(x, float) and np.isnan(x)) else round(float(x), n)
+
+
+def iso(ts) -> str:
+    return pd.Timestamp(ts).strftime("%Y-%m-%d")
+
+
+def change_bp(x: pd.Series, days: int) -> float | None:
+    """Change in bp vs the last observation on or before (last date - days)."""
+    last_d = x.index[-1]
+    prev = x[x.index <= last_d - pd.Timedelta(days=days)]
+    return None if prev.empty else r2((x.iloc[-1] - prev.iloc[-1]) * 100, 1)
+
+
+def yoy(x: pd.Series) -> pd.Series:
+    return (x / x.shift(12) - 1) * 100
+
+
+def ann3m(x: pd.Series) -> pd.Series:
+    return ((x / x.shift(3)) ** 4 - 1) * 100
+
+
+def point(x: pd.Series, n=2) -> dict:
+    x = x.dropna()
+    return {"value": r2(x.iloc[-1], n), "prior": r2(x.iloc[-2], n), "period": iso(x.index[-1])}
+
+
+def rate_block(sid: str) -> dict:
+    x = s(sid)
+    return {"value": r2(x.iloc[-1], 3), "date": iso(x.index[-1]),
+            "chg_1d": change_bp(x, 1), "chg_1w": change_bp(x, 7), "chg_1m": change_bp(x, 30)}
+
+
+def history(x: pd.Series, start: str, freq: str | None = None, n=3) -> list:
+    x = x[x.index >= start].dropna()
+    if freq:
+        x = x.resample(freq).last().dropna()
+    return [[iso(d), r2(v, n)] for d, v in x.items()]
+
+
+# ------------------------------------------------------------------ economies
+def us_policy() -> pd.Series:
+    return (s("US_FF_UPPER") + s("US_FF_LOWER")) / 2
+
+
+ECON = {
+    "USD": dict(cb="Fed", policy=us_policy, policy_label="Fed funds target midpoint",
+                y2="US_2Y", y10="US_10Y", y30="US_30Y", long_label="30y",
+                path=[("1m", 1, "US_1M"), ("3m", 3, "US_3M"), ("6m", 6, "US_6M"), ("1y", 12, "US_1Y"), ("2y", 24, "US_2Y")],
+                path_quality="Proxy: Treasury bill and note yields vs the policy midpoint. Bills also carry supply and term premium, so read the shape, not the exact bp."),
+    "EUR": dict(cb="ECB", policy=lambda: s("EA_DFR"), policy_label="ECB deposit facility rate",
+                y2="EA_2Y", y10="EA_10Y", y30="EA_30Y", long_label="30y",
+                path=[("3m", 3, "EA_3M"), ("1y", 12, "EA_1Y"), ("2y", 24, "EA_2Y")],
+                path_quality="Proxy: ECB AAA government curve (spot) vs the deposit rate. Rough guide only."),
+    "GBP": dict(cb="BoE", policy=lambda: s("UK_BANKRATE"), policy_label="Bank Rate",
+                y2="UK_2Y", y10="UK_10Y", y30="UK_20Y", long_label="20y",
+                path=[(f"{m}m", m, f"UK_OIS_FWD_{m:02d}M") for m in (1, 3, 6, 9, 12, 18, 24)],
+                path_quality="Market pricing: Bank of England OIS instantaneous forward curve. Closest to a true priced path."),
+    "JPY": dict(cb="BoJ", policy=lambda: s("JP_CALL"), policy_label="Overnight call rate (actual)",
+                y2="JP_2Y", y10="JP_10Y", y30="JP_30Y", long_label="30y",
+                path=[("1y", 12, "JP_1Y"), ("2y", 24, "JP_2Y")],
+                path_quality="Proxy: JGB 1y and 2y yields vs the overnight call rate. Rough guide only."),
+}
+
+
+def implied_path(cfg: dict, policy_now: float, asof_shift_days: int = 0) -> list:
+    out = []
+    for label, months, sid in cfg["path"]:
+        x = s(sid)
+        if asof_shift_days:
+            x = x[x.index <= x.index[-1] - pd.Timedelta(days=asof_shift_days)]
+        if x.empty:
+            continue
+        out.append({"label": label, "months": months, "rate": r2(x.iloc[-1], 3),
+                    "vs_policy_bp": r2((x.iloc[-1] - policy_now) * 100, 0)})
+    return out
+
+
+def economy_block(code: str) -> dict:
+    cfg = ECON[code]
+    pol = cfg["policy"]().dropna()
+    pol_now = float(pol.iloc[-1])
+    y2, y10, y30 = s(cfg["y2"]), s(cfg["y10"]), s(cfg["y30"])
+    curve = (y10 - y2).dropna() * 100
+    path_now = implied_path(cfg, pol_now)
+    path_1w = implied_path(cfg, pol_now, 7)
+    # headline proxy: 12m-ahead point (or nearest) vs policy
+    p12 = min(path_now, key=lambda p: abs(p["months"] - 12))
+    p12_1w = next((p for p in path_1w if p["label"] == p12["label"]), None)
+    nxt = next((m for m in CAL if m["economy"] == code and pd.Timestamp(m["date"]) >= pd.Timestamp.today().normalize()), None)
+    return {
+        "cb": cfg["cb"],
+        "policy": {"label": cfg["policy_label"], "value": r2(pol_now, 3), "date": iso(pol.index[-1])},
+        "next_meeting": nxt,
+        "y2": rate_block(cfg["y2"]), "y10": rate_block(cfg["y10"]),
+        "ylong": {**rate_block(cfg["y30"]), "label": cfg["long_label"]},
+        "s2s10s": {"value": r2(curve.iloc[-1], 1), "chg_1w": r2(curve.iloc[-1] - curve[curve.index <= curve.index[-1] - pd.Timedelta(days=7)].iloc[-1], 1),
+                   "chg_1m": r2(curve.iloc[-1] - curve[curve.index <= curve.index[-1] - pd.Timedelta(days=30)].iloc[-1], 1)},
+        "priced_12m": {"label": p12["label"], "vs_policy_bp": p12["vs_policy_bp"],
+                       "chg_1w_bp": None if p12_1w is None else r2(p12["vs_policy_bp"] - p12_1w["vs_policy_bp"], 0)},
+        "path": path_now, "path_1w": path_1w, "path_quality": cfg["path_quality"],
+        "hist": {"y2": history(y2, "2024-10-01"), "y10": history(y10, "2024-10-01"),
+                 "policy": history(pol, "2024-10-01")},
+    }
+
+
+# ------------------------------------------------------------------ macro
+def macro() -> dict:
+    us_cpi, us_core, us_pce, us_pcec = s("US_CPI"), s("US_CPI_CORE"), s("US_PCE"), s("US_PCE_CORE")
+    us_shel = s("US_CPI_SHELTER")
+    pay = s("US_PAYROLLS").diff()
+    infl = {
+        "USD": {"headline": point(yoy(us_cpi).dropna(), 1), "core": point(yoy(us_core).dropna(), 1),
+                "extra": [{"name": "Core CPI, 3m annualised", **point(ann3m(us_core).dropna(), 1)},
+                          {"name": "Core PCE y/y", **point(yoy(us_pcec).dropna(), 1)},
+                          {"name": "Shelter CPI y/y", **point(yoy(us_shel).dropna(), 1)},
+                          {"name": "10y breakeven", **point(s("US_10Y_BEI"), 2)}],
+                "headline_name": "CPI y/y", "core_name": "Core CPI y/y"},
+        "EUR": {"headline": point(s("EA_HICP"), 1), "core": point(s("EA_HICP_CORE"), 1),
+                "extra": [{"name": "Services y/y", **point(s("EA_HICP_SERV"), 1)},
+                          {"name": "Energy y/y", **point(s("EA_HICP_NRG"), 1)},
+                          {"name": "Non-energy goods y/y", **point(s("EA_HICP_NEIG"), 1)}],
+                "headline_name": "HICP y/y", "core_name": "Core HICP y/y"},
+        "GBP": {"headline": point(s("UK_CPI"), 1), "core": point(s("UK_CPI_CORE"), 1),
+                "extra": [{"name": "Services CPI y/y", **point(s("UK_CPI_SERV"), 1)}],
+                "headline_name": "CPI y/y", "core_name": "Core CPI y/y"},
+        "JPY": {"headline": None, "core": None, "extra": [],
+                "headline_name": "CPI y/y", "core_name": "Core CPI y/y",
+                "note": "Japan CPI needs a free e-Stat app ID; not yet collected."},
+    }
+    labour = {
+        "USD": [{"name": "Unemployment rate", **point(s("US_UNEMP"), 1)},
+                {"name": "Payrolls, 3m avg (k)", **point(pay.rolling(3).mean().dropna(), 0)},
+                {"name": "Hourly earnings y/y", **point(yoy(s("US_AHE")).dropna(), 1)},
+                {"name": "Job openings (m)", **point(s("US_JOLTS") / 1000, 2)},
+                {"name": "Initial claims (k)", **point(s("US_CLAIMS") / 1000, 0)}],
+        "EUR": [{"name": "Unemployment rate", **point(s("EA_UNEMP"), 1)}],
+        "GBP": [{"name": "Unemployment rate (LFS)", **point(s("UK_UNEMP"), 1)},
+                {"name": "Pay growth, 3m avg y/y", **point(s("UK_PAY"), 1)}],
+        "JPY": [{"name": "Unemployment rate", **point(s("JP_UNEMP"), 1)}],
+    }
+    gdp_us = ((s("US_GDP") / s("US_GDP").shift(1)) ** 4 - 1) * 100
+    uk_gdp = s("UK_GDP_M").pct_change() * 100
+    growth = {
+        "USD": {"name": "Real GDP q/q annualised", **point(gdp_us.dropna(), 1)},
+        "EUR": {"name": "Real GDP y/y", **point(s("EA_GDP"), 1)},
+        "GBP": {"name": "Monthly GDP m/m", **point(uk_gdp.dropna(), 1)},
+        "JPY": None,
+    }
+    charts = {
+        "inflation": {
+            "USD": {"headline": history(yoy(us_cpi).dropna(), "2021-01-01", n=2), "core": history(yoy(us_core).dropna(), "2021-01-01", n=2)},
+            "EUR": {"headline": history(s("EA_HICP"), "2021-01-01", n=2), "core": history(s("EA_HICP_CORE"), "2021-01-01", n=2)},
+            "GBP": {"headline": history(s("UK_CPI"), "2021-01-01", n=2), "core": history(s("UK_CPI_CORE"), "2021-01-01", n=2)},
+        },
+        "unemployment": {
+            "USD": history(s("US_UNEMP"), "2021-01-01", n=2), "EUR": history(s("EA_UNEMP"), "2021-01-01", n=2),
+            "GBP": history(s("UK_UNEMP"), "2021-01-01", n=2), "JPY": history(s("JP_UNEMP"), "2021-01-01", n=2),
+        },
+    }
+    return {"inflation": infl, "labour": labour, "growth": growth, "charts": charts}
+
+
+# ------------------------------------------------------------------ releases (latest monthly prints)
+def releases() -> list:
+    rows = []
+    specs = [("USD", "CPI y/y", yoy(s("US_CPI")), 1), ("USD", "Core CPI y/y", yoy(s("US_CPI_CORE")), 1),
+             ("USD", "Core PCE y/y", yoy(s("US_PCE_CORE")), 1), ("USD", "Unemployment rate", s("US_UNEMP"), 1),
+             ("USD", "Payrolls change (k)", s("US_PAYROLLS").diff(), 0), ("USD", "Hourly earnings y/y", yoy(s("US_AHE")), 1),
+             ("USD", "Job openings (m)", s("US_JOLTS") / 1000, 2),
+             ("EUR", "HICP y/y", s("EA_HICP"), 1), ("EUR", "Core HICP y/y", s("EA_HICP_CORE"), 1),
+             ("EUR", "Services HICP y/y", s("EA_HICP_SERV"), 1), ("EUR", "Unemployment rate", s("EA_UNEMP"), 1),
+             ("GBP", "CPI y/y", s("UK_CPI"), 1), ("GBP", "Core CPI y/y", s("UK_CPI_CORE"), 1),
+             ("GBP", "Services CPI y/y", s("UK_CPI_SERV"), 1), ("GBP", "Unemployment rate", s("UK_UNEMP"), 1),
+             ("GBP", "Pay growth 3m y/y", s("UK_PAY"), 1), ("GBP", "Monthly GDP m/m", s("UK_GDP_M").pct_change() * 100, 1),
+             ("JPY", "Unemployment rate", s("JP_UNEMP"), 1)]
+    for eco, name, x, n in specs:
+        x = x.dropna()
+        rows.append({"economy": eco, "name": name, "period": x.index[-1].strftime("%b %Y"), "period_iso": iso(x.index[-1]),
+                     "value": r2(x.iloc[-1], n), "prior": r2(x.iloc[-2], n), "change": r2(x.iloc[-1] - x.iloc[-2], n)})
+    return sorted(rows, key=lambda r: r["period_iso"], reverse=True)
+
+
+# ------------------------------------------------------------------ cross-market
+def spreads() -> list:
+    pairs = [("UST – Euro AAA 10y", "US_10Y", "EA_10Y"), ("Gilt – Euro AAA 10y", "UK_10Y", "EA_10Y"),
+             ("UST – JGB 10y", "US_10Y", "JP_10Y"), ("UST – Euro AAA 2y", "US_2Y", "EA_2Y"),
+             ("Gilt – UST 10y", "UK_10Y", "US_10Y")]
+    out = []
+    for name, a, b in pairs:
+        x = (pd.concat([s(a), s(b)], axis=1).dropna().pipe(lambda d: d.iloc[:, 0] - d.iloc[:, 1]) * 100)
+        yr = x[x.index >= x.index[-1] - pd.Timedelta(days=365)]
+        out.append({"name": name, "value_bp": r2(x.iloc[-1], 0), "date": iso(x.index[-1]),
+                    "chg_1w_bp": change_bp(x / 100, 7), "chg_1m_bp": change_bp(x / 100, 30),
+                    "z_1y": r2((x.iloc[-1] - yr.mean()) / yr.std(), 2),
+                    "range_1y": [r2(yr.min(), 0), r2(yr.max(), 0)],
+                    "hist": history(x, "2024-10-01", "W-FRI", n=1)})
+    return out
+
+
+def main() -> None:
+    econ = {c: economy_block(c) for c in ECON}
+    out = {
+        "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+        "economies": econ,
+        "macro": macro(),
+        "releases": releases(),
+        "spreads": spreads(),
+        "calendar": [m | {"date": str(m["date"])} for m in CAL if pd.Timestamp(m["date"]) >= pd.Timestamp.today().normalize()],
+        "freshness": {sid: iso(g["date"].max()) for sid, g in D.groupby("series_id") if "OIS_FWD" not in sid},
+        "sources": ["FRED (St. Louis Fed)", "ECB Data Portal", "Eurostat (prc_hicp_minr)", "ONS", "Bank of England (IADB, yield curves)",
+                    "Bank of Japan Time-Series API", "Japan Ministry of Finance (JGB yields)"],
+    }
+    (OUT / "dashboard.json").write_text(json.dumps(out, default=str))
+    print("wrote", OUT / "dashboard.json", f"{(OUT / 'dashboard.json').stat().st_size/1024:.0f} KB")
+    for c, e in econ.items():
+        print(c, "policy", e["policy"]["value"], "| 2y", e["y2"]["value"], e["y2"]["chg_1w"], "| 10y", e["y10"]["value"],
+              "| 2s10s", e["s2s10s"]["value"], "| priced", e["priced_12m"], "| next", (e["next_meeting"] or {}).get("date"))
+
+
+if __name__ == "__main__":
+    main()

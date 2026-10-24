@@ -1,0 +1,73 @@
+# Series registry, v1 (USD, EUR, GBP, JPY). All codes test-pulled on 2026-10-24.
+# source: fred | ecb | eurostat_hicp | ons | boe_iadb | boe_curve | boj | mof
+# kind: rate (policy/overnight), yield, macro
+series:
+  # ---------------- USD ----------------
+  - {id: US_CPI,        economy: USD, name: CPI headline,              source: fred, code: CPIAUCSL,      freq: M, transform: yoy, tier: 1}
+  - {id: US_CPI_CORE,   economy: USD, name: CPI core,                  source: fred, code: CPILFESL,      freq: M, transform: yoy, tier: 1}
+  - {id: US_CPI_SHELTER,economy: USD, name: CPI shelter,               source: fred, code: CUSR0000SAH1,  freq: M, transform: yoy, tier: 2}
+  - {id: US_PCE,        economy: USD, name: PCE headline,              source: fred, code: PCEPI,         freq: M, transform: yoy, tier: 1}
+  - {id: US_PCE_CORE,   economy: USD, name: PCE core,                  source: fred, code: PCEPILFE,      freq: M, transform: yoy, tier: 1}
+  - {id: US_PAYROLLS,   economy: USD, name: Nonfarm payrolls,          source: fred, code: PAYEMS,        freq: M, transform: diff, tier: 1}
+  - {id: US_UNEMP,      economy: USD, name: Unemployment rate,         source: fred, code: UNRATE,        freq: M, transform: level, tier: 1}
+  - {id: US_AHE,        economy: USD, name: Average hourly earnings,   source: fred, code: CES0500000003, freq: M, transform: yoy, tier: 1}
+  - {id: US_CLAIMS,     economy: USD, name: Initial jobless claims,    source: fred, code: ICSA,          freq: W, transform: level, tier: 2}
+  - {id: US_JOLTS,      economy: USD, name: Job openings,              source: fred, code: JTSJOL,        freq: M, transform: level, tier: 2}
+  - {id: US_GDP,        economy: USD, name: Real GDP,                  source: fred, code: GDPC1,         freq: Q, transform: qoq_saar, tier: 1}
+  - {id: US_FF_UPPER,   economy: USD, name: Fed funds target upper,    source: fred, code: DFEDTARU,      freq: D, transform: level}
+  - {id: US_FF_LOWER,   economy: USD, name: Fed funds target lower,    source: fred, code: DFEDTARL,      freq: D, transform: level}
+  - {id: US_EFFR,       economy: USD, name: Effective fed funds rate,  source: fred, code: EFFR,          freq: D, transform: level}
+  - {id: US_SOFR,       economy: USD, name: SOFR,                      source: fred, code: SOFR,          freq: D, transform: level}
+  - {id: US_1M,         economy: USD, name: Treasury 1m,               source: fred, code: DGS1MO,        freq: D, transform: level, tenor: 0.083}
+  - {id: US_3M,         economy: USD, name: Treasury 3m,               source: fred, code: DGS3MO,        freq: D, transform: level, tenor: 0.25}
+  - {id: US_6M,         economy: USD, name: Treasury 6m,               source: fred, code: DGS6MO,        freq: D, transform: level, tenor: 0.5}
+  - {id: US_1Y,         economy: USD, name: Treasury 1y,               source: fred, code: DGS1,          freq: D, transform: level, tenor: 1}
+  - {id: US_2Y,         economy: USD, name: Treasury 2y,               source: fred, code: DGS2,          freq: D, transform: level, tenor: 2}
+  - {id: US_5Y,         economy: USD, name: Treasury 5y,               source: fred, code: DGS5,          freq: D, transform: level, tenor: 5}
+  - {id: US_10Y,        economy: USD, name: Treasury 10y,              source: fred, code: DGS10,         freq: D, transform: level, tenor: 10}
+  - {id: US_30Y,        economy: USD, name: Treasury 30y,              source: fred, code: DGS30,         freq: D, transform: level, tenor: 30}
+  - {id: US_10Y_REAL,   economy: USD, name: 10y TIPS real yield,       source: fred, code: DFII10,        freq: D, transform: level}
+  - {id: US_10Y_BEI,    economy: USD, name: 10y breakeven inflation,   source: fred, code: T10YIE,        freq: D, transform: level}
+
+  # ---------------- EUR ----------------
+  # HICP moved to ECOICOP ver.2 dataset prc_hicp_minr in 2026 (old ICP/prc_hicp_manr series stop at 2025-12)
+  - {id: EA_HICP,       economy: EUR, name: HICP headline,             source: eurostat_hicp, code: TOTAL,          freq: M, transform: level, tier: 1}
+  - {id: EA_HICP_CORE,  economy: EUR, name: HICP core (ex energy, food, alc, tob), source: eurostat_hicp, code: TOT_X_NRG_FOOD, freq: M, transform: level, tier: 1}
+  - {id: EA_HICP_SERV,  economy: EUR, name: HICP services,             source: eurostat_hicp, code: SERV,           freq: M, transform: level, tier: 1}
+  - {id: EA_HICP_NRG,   economy: EUR, name: HICP energy,               source: eurostat_hicp, code: NRG,            freq: M, transform: level, tier: 2}
+  - {id: EA_HICP_NEIG,  economy: EUR, name: HICP non-energy industrial goods, source: eurostat_hicp, code: IGD_NNRG, freq: M, transform: level, tier: 2}
+  - {id: EA_UNEMP,      economy: EUR, name: Unemployment rate,         source: ecb, code: LFSI/M.I9.S.UNEHRT.TOTAL0.15_74.T, freq: M, transform: level, tier: 1}
+  - {id: EA_GDP,        economy: EUR, name: Real GDP q/q,              source: ecb, code: MNA/Q.Y.I9.W2.S1.S1.B.B1GQ._Z._Z._Z.EUR.LR.GY, freq: Q, transform: level, tier: 1}
+  - {id: EA_DFR,        economy: EUR, name: ECB deposit facility rate, source: ecb, code: FM/D.U2.EUR.4F.KR.DFR.LEV, freq: D, transform: level}
+  - {id: EA_ESTR,       economy: EUR, name: €STR,                      source: ecb, code: EST/B.EU000A2X2A25.WT,    freq: D, transform: level}
+  - {id: EA_3M,         economy: EUR, name: AAA curve 3m,              source: ecb, code: YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_3M,  freq: D, transform: level, tenor: 0.25}
+  - {id: EA_1Y,         economy: EUR, name: AAA curve 1y,              source: ecb, code: YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_1Y,  freq: D, transform: level, tenor: 1}
+  - {id: EA_2Y,         economy: EUR, name: AAA curve 2y,              source: ecb, code: YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y,  freq: D, transform: level, tenor: 2}
+  - {id: EA_5Y,         economy: EUR, name: AAA curve 5y,              source: ecb, code: YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_5Y,  freq: D, transform: level, tenor: 5}
+  - {id: EA_10Y,        economy: EUR, name: AAA curve 10y,             source: ecb, code: YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y, freq: D, transform: level, tenor: 10}
+  - {id: EA_30Y,        economy: EUR, name: AAA curve 30y,             source: ecb, code: YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_30Y, freq: D, transform: level, tenor: 30}
+
+  # ---------------- GBP ----------------
+  - {id: UK_CPI,        economy: GBP, name: CPI headline,              source: ons, code: /economy/inflationandpriceindices/timeseries/d7g7/mm23, freq: M, transform: level, tier: 1}
+  - {id: UK_CPI_CORE,   economy: GBP, name: CPI core,                  source: ons, code: /economy/inflationandpriceindices/timeseries/dko8/mm23, freq: M, transform: level, tier: 1}
+  - {id: UK_CPI_SERV,   economy: GBP, name: CPI services,              source: ons, code: /economy/inflationandpriceindices/timeseries/d7nn/mm23, freq: M, transform: level, tier: 1}
+  - {id: UK_UNEMP,      economy: GBP, name: Unemployment rate (LFS),   source: ons, code: /employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx/lms, freq: M, transform: level, tier: 1}
+  - {id: UK_PAY,        economy: GBP, name: AWE pay growth (3m avg y/y), source: ons, code: /employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/kai9/lms, freq: M, transform: level, tier: 1}
+  - {id: UK_GDP_M,      economy: GBP, name: Monthly GDP index,         source: ons, code: /economy/grossdomesticproductgdp/timeseries/ecy2/mgdp, freq: M, transform: mom, tier: 1}
+  - {id: UK_BANKRATE,   economy: GBP, name: Bank Rate,                 source: boe_iadb, code: IUDBEDR, freq: D, transform: level}
+  - {id: UK_SONIA,      economy: GBP, name: SONIA,                     source: boe_iadb, code: IUDSOIA, freq: D, transform: level}
+  - {id: UK_5Y,         economy: GBP, name: Gilt 5y par yield,         source: boe_iadb, code: IUDSNPY, freq: D, transform: level, tenor: 5}
+  - {id: UK_10Y,        economy: GBP, name: Gilt 10y par yield,        source: boe_iadb, code: IUDMNPY, freq: D, transform: level, tenor: 10}
+  - {id: UK_20Y,        economy: GBP, name: Gilt 20y par yield,        source: boe_iadb, code: IUDLNPY, freq: D, transform: level, tenor: 20}
+  - {id: UK_2Y,         economy: GBP, name: Gilt 2y spot (BoE curve),  source: boe_curve, code: "GLC Nominal|4. spot curve|2.0", freq: D, transform: level, tenor: 2}
+  - {id: UK_OIS_FWD,    economy: GBP, name: OIS instantaneous forwards (1-24m), source: boe_curve, code: "OIS|1. fwds, short end|*", freq: D, transform: level}
+
+  # ---------------- JPY ----------------
+  - {id: JP_CALL,       economy: JPY, name: Uncollateralised overnight call rate, source: boj, code: FM01/STRDCLUCON, freq: D, transform: level}
+  - {id: JP_1Y,         economy: JPY, name: JGB 1y,  source: mof, code: 1Y,  freq: D, transform: level, tenor: 1}
+  - {id: JP_2Y,         economy: JPY, name: JGB 2y,  source: mof, code: 2Y,  freq: D, transform: level, tenor: 2}
+  - {id: JP_5Y,         economy: JPY, name: JGB 5y,  source: mof, code: 5Y,  freq: D, transform: level, tenor: 5}
+  - {id: JP_10Y,        economy: JPY, name: JGB 10y, source: mof, code: 10Y, freq: D, transform: level, tenor: 10}
+  - {id: JP_30Y,        economy: JPY, name: JGB 30y, source: mof, code: 30Y, freq: D, transform: level, tenor: 30}
+  - {id: JP_UNEMP,      economy: JPY, name: Unemployment rate (OECD via FRED), source: fred, code: LRHUTTTTJPM156S, freq: M, transform: level, tier: 1}
+  # Japan CPI: needs a free e-Stat app ID (api.e-stat.go.jp). Not yet collected.
