@@ -23,7 +23,7 @@
 .rm-reads b { color: var(--color-fg); font-weight: 600; }
 
 /* market strip */
-.rm-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr)); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-panel); overflow: hidden; }
+.rm-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 7.25rem), 1fr)); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-panel); overflow: hidden; }
 .rm-tile { padding: 10px 12px 8px; border-right: 1px solid var(--color-border-line); border-bottom: 1px solid var(--color-border-line); margin: 0 -1px -1px 0; min-width: 0; }
 .rm-tile-l { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--color-fg-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rm-tile-v { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; margin-top: 2px; }
@@ -159,7 +159,7 @@
       <div class="rm-sec-h"><h2>Central bank board</h2><p>Priced = market-implied change vs today's policy rate about 12 months out. GBP from OIS; USD, EUR, JPY are government-curve proxies.</p></div>
       <div class="rm-tw">
         <table class="rm-table" id="board-table" data-source="overview" data-row-key="economy">
-          <thead><tr><th class="t" data-field="economy">Ccy</th><th class="t" data-field="cb">Bank</th><th data-field="policy">Policy %</th><th class="t" data-field="next_meeting">Next decision</th><th data-field="days_to_meeting">Days</th>
+          <thead><tr><th class="t" data-field="economy">Ccy</th><th class="t" data-field="cb">Bank</th><th data-field="policy">Policy %</th><th class="t" data-field="next_meeting_sgt">Next decision (SGT)</th><th data-field="days_to_meeting">Days</th>
             <th data-field="priced_12m_bp">Priced 12m</th><th data-field="priced_chg_1w_bp">Δ1w</th><th data-field="y2">2y %</th><th data-field="y2_chg_1d">Δ1d</th><th data-field="y10">10y %</th><th data-field="y10_chg_1d">Δ1d</th><th data-field="s2s10s">2s10s</th><th data-field="s2s10s_chg_1w">Δ1w</th></tr></thead>
           <tbody></tbody>
         </table>
@@ -385,7 +385,9 @@
 
   function spark(el, vals, w, h) {
     el.innerHTML = '';
-    const v = (vals || []).map(Number).filter(x => !isNaN(x));
+    let arr = vals;
+    if (typeof arr === 'string') { try { arr = JSON.parse(arr); } catch (e) { arr = []; } }
+    const v = (Array.isArray(arr) ? arr : []).map(Number).filter(x => !isNaN(x));
     if (v.length < 2) return;
     const W = w || Math.max(60, el.clientWidth || 120), H = h || 26;
     const x = d3.scaleLinear().domain([0, v.length - 1]).range([1, W - 3]);
@@ -496,7 +498,7 @@
       lv.textContent = pct(N(r.level));
       ch.textContent = sgn(N(r.chg_1d));
       ch.className = 'rm-tile-c rm-num ' + dirCls(N(r.chg_1d));
-      if (visible(sp)) spark(sp, r.spark, sp.clientWidth, 26);
+      try { if (visible(sp)) spark(sp, r.spark, sp.clientWidth, 26); } catch (e) { console.error(e); }
     });
   });
 
@@ -508,7 +510,7 @@
       const tr = document.createElement('tr');
       td(tr, r.economy, 't rm-eco'); td(tr, r.cb, 't');
       td(tr, pct(N(r.policy), Math.round(N(r.policy) * 1000) % 10 ? 3 : 2));
-      td(tr, r.next_meeting ? fmtShort(parse(r.next_meeting)) + ' · ' + (r.next_meeting_sgt || '') : '—', 't');
+      td(tr, r.next_meeting_sgt || (r.next_meeting ? fmtShort(parse(r.next_meeting)) : '—'), 't');
       const dc = td(tr, r.days_to_meeting == null ? '—' : String(N(r.days_to_meeting))); if (N(r.days_to_meeting) <= 7) dc.classList.add('rm-warn', 'rm-strong');
       td(tr, sgn(N(r.priced_12m_bp)), 'rm-strong'); td(tr, sgn(N(r.priced_chg_1w_bp)), 'rm-flat');
       td(tr, pct(N(r.y2))); td(tr, sgn(N(r.y2_chg_1d)), dirCls(N(r.y2_chg_1d)));
@@ -540,7 +542,7 @@
       td(tr, fmtShort(parse(r.date)), 'rm-flat');
       last = r.economy;
       tb.appendChild(tr);
-      if (visible(tb)) spark(sp, r.spark, 72, 16);
+      try { if (visible(tb)) spark(sp, r.spark, 72, 16); } catch (e) { console.error(e); }
     });
   });
 
