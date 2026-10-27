@@ -66,6 +66,31 @@ def fred(sid: str, code: str) -> pd.DataFrame:
     return _frame(sid, [o["date"] for o in obs], [o["value"] for o in obs])
 
 
+def estat_cpi(items: list[tuple[str, str]]) -> pd.DataFrame:
+    """Japan CPI year-on-year rates from e-Stat (Statistics Bureau, 2020-base table 0003427113).
+    code = "<area>/<item>", e.g. "00000/0161" (all Japan, all items less fresh food). Needs ESTAT_APP_ID."""
+    k = os.environ.get("ESTAT_APP_ID")
+    if not k:
+        raise RuntimeError("ESTAT_APP_ID not set; Japan CPI skipped")
+    areas = sorted({c.split("/")[0] for _, c in items}); cats = sorted({c.split("/")[1] for _, c in items})
+    j = _get("https://api.e-stat.go.jp/rest/3.0/app/json/getStatsData",
+             params=dict(appId=k, statsDataId="0003427113", lang="E", cdTab="3", cdCat01=",".join(cats),
+                         cdArea=",".join(areas), cdTimeFrom=START[:4] + "000101", limit=100000)).json()
+    res = j["GET_STATS_DATA"]["RESULT"]
+    if str(res.get("STATUS")) != "0":
+        raise RuntimeError(f"e-Stat: {res.get('ERROR_MSG')}")
+    rows = j["GET_STATS_DATA"]["STATISTICAL_DATA"]["DATA_INF"]["VALUE"]
+    df = pd.DataFrame([{"area": v["@area"], "cat": v["@cat01"], "time": v["@time"], "val": v["$"]} for v in rows])
+    df = df[(df.time.str[6:8] == df.time.str[8:10]) & (df.time.str[6:8] != "00")]  # monthly codes YYYY00MMMM
+    df["date"] = pd.to_datetime(df.time.str[:4] + "-" + df.time.str[6:8] + "-01")
+    out = []
+    for sid, code in items:
+        a, c = code.split("/")
+        d = df[(df.area == a) & (df.cat == c)]
+        out.append(_frame(sid, d["date"], d["val"]))
+    return pd.concat(out)
+
+
 def fred_dots_prior() -> pd.DataFrame:
     """FOMC median dots as published at the previous SEP (ALFRED vintage), series US_DOTS_PRIOR."""
     k = os.environ["FRED_API_KEY"]
@@ -330,7 +355,7 @@ def main() -> int:
     _load_env()
     reg = yaml.safe_load((ROOT / "config" / "series.yaml").read_text())["series"]
     frames, errors = [], []
-    iadb, mof_items = [], []
+    iadb, mof_items, estat_items = [], [], []
     for s in reg:
         sid, src, code = s["id"], s["source"], s["code"]
         try:
@@ -348,10 +373,12 @@ def main() -> int:
                 iadb.append((sid, code))
             elif src == "mof":
                 mof_items.append((sid, code))
+            elif src == "estat":
+                estat_items.append((sid, code))
         except Exception as e:  # keep going; report at the end
             errors.append(f"{sid}: {e}")
     for name, fn in (("boe_iadb", lambda: boe_iadb(iadb)), ("mof", lambda: mof(mof_items)), ("boe_curve", boe_curves),
-                     ("fred_dots_prior", fred_dots_prior)):
+                     ("fred_dots_prior", fred_dots_prior), ("estat_cpi", lambda: estat_cpi(estat_items))):
         try:
             frames.append(fn())
         except Exception as e:

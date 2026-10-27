@@ -70,7 +70,12 @@ series:
   - {id: JP_10Y,        economy: JPY, name: JGB 10y, source: mof, code: 10Y, freq: D, transform: level, tenor: 10}
   - {id: JP_30Y,        economy: JPY, name: JGB 30y, source: mof, code: 30Y, freq: D, transform: level, tenor: 30}
   - {id: JP_UNEMP,      economy: JPY, name: Unemployment rate (OECD via FRED), source: fred, code: LRHUTTTTJPM156S, freq: M, transform: level, tier: 1}
-  # Japan CPI: needs a free e-Stat app ID (api.e-stat.go.jp). Not yet collected.
+  # Japan CPI from e-Stat (Statistics Bureau, 2020 base), published y/y rates; needs ESTAT_APP_ID
+  - {id: JP_CPI,          economy: JPY, name: CPI headline y/y,                      source: estat, code: 00000/0001, freq: M, transform: level, tier: 1}
+  - {id: JP_CPI_CORE,     economy: JPY, name: Core CPI ex fresh food y/y (BoJ target), source: estat, code: 00000/0161, freq: M, transform: level, tier: 1}
+  - {id: JP_CPI_CORECORE, economy: JPY, name: CPI ex fresh food and energy y/y,      source: estat, code: 00000/0178, freq: M, transform: level, tier: 1}
+  - {id: JP_CPI_SERV,     economy: JPY, name: Services CPI y/y,                      source: estat, code: 00000/0220, freq: M, transform: level, tier: 2}
+  - {id: JP_TOKYO_CORE,   economy: JPY, name: Tokyo core CPI ex fresh food y/y,      source: estat, code: 13A01/0161, freq: M, transform: level, tier: 1}
 
   # ---------------- Added Oct 2026: policy, liquidity, cross-asset, inflation expectations ----------------
   - {id: US_DOTS,       economy: USD, name: FOMC median dot (year-end),        source: fred, code: FEDTARMD,     freq: A, transform: level}

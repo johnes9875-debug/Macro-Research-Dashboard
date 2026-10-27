@@ -164,9 +164,11 @@ def macro() -> dict:
         "GBP": {"headline": point(s("UK_CPI"), 1), "core": point(s("UK_CPI_CORE"), 1),
                 "extra": [{"name": "Services CPI y/y", **point(s("UK_CPI_SERV"), 1)}],
                 "headline_name": "CPI y/y", "core_name": "Core CPI y/y"},
-        "JPY": {"headline": None, "core": None, "extra": [],
-                "headline_name": "CPI y/y", "core_name": "Core CPI y/y",
-                "note": "Japan CPI needs a free e-Stat app ID; not yet collected."},
+        "JPY": {"headline": point(s("JP_CPI"), 1), "core": point(s("JP_CPI_CORE"), 1),
+                "extra": [{"name": "Core-core (ex fresh food & energy) y/y", **point(s("JP_CPI_CORECORE"), 1)},
+                          {"name": "Services CPI y/y", **point(s("JP_CPI_SERV"), 1)},
+                          {"name": "Tokyo core CPI y/y", **point(s("JP_TOKYO_CORE"), 1)}],
+                "headline_name": "CPI y/y", "core_name": "Core CPI (ex fresh food) y/y"},
     }
     labour = {
         "USD": [{"name": "Unemployment rate", **point(s("US_UNEMP"), 1)},
@@ -192,6 +194,7 @@ def macro() -> dict:
             "USD": {"headline": history(yoy(us_cpi).dropna(), "2021-01-01", n=2), "core": history(yoy(us_core).dropna(), "2021-01-01", n=2)},
             "EUR": {"headline": history(s("EA_HICP"), "2021-01-01", n=2), "core": history(s("EA_HICP_CORE"), "2021-01-01", n=2)},
             "GBP": {"headline": history(s("UK_CPI"), "2021-01-01", n=2), "core": history(s("UK_CPI_CORE"), "2021-01-01", n=2)},
+            "JPY": {"headline": history(s("JP_CPI"), "2021-01-01", n=2), "core": history(s("JP_CPI_CORE"), "2021-01-01", n=2)},
         },
         "unemployment": {
             "USD": history(s("US_UNEMP"), "2021-01-01", n=2), "EUR": history(s("EA_UNEMP"), "2021-01-01", n=2),
@@ -213,7 +216,8 @@ def releases() -> list:
              ("GBP", "CPI y/y", s("UK_CPI"), 1), ("GBP", "Core CPI y/y", s("UK_CPI_CORE"), 1),
              ("GBP", "Services CPI y/y", s("UK_CPI_SERV"), 1), ("GBP", "Unemployment rate", s("UK_UNEMP"), 1),
              ("GBP", "Pay growth 3m y/y", s("UK_PAY"), 1), ("GBP", "Monthly GDP m/m", s("UK_GDP_M").pct_change() * 100, 1),
-             ("JPY", "Unemployment rate", s("JP_UNEMP"), 1)]
+             ("JPY", "CPI y/y", s("JP_CPI"), 1), ("JPY", "Core CPI (ex fresh food) y/y", s("JP_CPI_CORE"), 1),
+             ("JPY", "Tokyo core CPI y/y", s("JP_TOKYO_CORE"), 1), ("JPY", "Unemployment rate", s("JP_UNEMP"), 1)]
     for eco, name, x, n in specs:
         x = x.dropna()
         rows.append({"economy": eco, "name": name, "period": x.index[-1].strftime("%b %Y"), "period_iso": iso(x.index[-1]),

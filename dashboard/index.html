@@ -386,7 +386,7 @@
   <!-- MACRO -->
   <div class="rm-pane" id="pane-macro" role="tabpanel" hidden>
     <section id="macro">
-      <div class="rm-sec-h"><h2>Inflation, labour and growth</h2><p>Latest print vs prior. Japan CPI pending a free e-Stat app ID.</p></div>
+      <div class="rm-sec-h"><h2>Inflation, labour and growth</h2><p>Latest print vs prior. Japan CPI from e-Stat (Statistics Bureau); core = ex fresh food, the BoJ's 2% gauge.</p></div>
       <div class="rm-grid-2">
         <div class="rm-tw">
           <table class="rm-table" id="macro-table" data-source="macro_latest" data-row-key="key">
@@ -400,6 +400,7 @@
           <div class="rm-chart" id="infl-USD" data-source="macro_hist" style="min-height:150px"></div>
           <div class="rm-chart" id="infl-EUR" data-source="macro_hist" style="min-height:150px"></div>
           <div class="rm-chart" id="infl-GBP" data-source="macro_hist" style="min-height:150px"></div>
+          <div class="rm-chart" id="infl-JPY" data-source="macro_hist" style="min-height:150px"></div>
           <div class="rm-card-h" style="margin-top:10px"><span>Unemployment rate, %</span></div>
           <div class="rm-chart" id="unemp-chart" data-source="macro_hist" style="min-height:180px"></div>
         </div>
@@ -791,12 +792,12 @@
       });
     }
     legend('infl-legend', [['Headline', C[0]], ['Core', C[2]]]);
-    if (bad(mh.status)) return ['infl-USD', 'infl-EUR', 'infl-GBP', 'unemp-chart'].forEach(id => failBox(document.getElementById(id)));
+    if (bad(mh.status)) return ['infl-USD', 'infl-EUR', 'infl-GBP', 'infl-JPY', 'unemp-chart'].forEach(id => failBox(document.getElementById(id)));
     if (mh.status !== 'ok' || !visible(document.getElementById('infl-USD'))) return;
     const pts = (e, mtr) => mh.data.filter(r => r.economy === e && r.metric === mtr).map(r => ({ x: parse(r.date), y: N(r.value) }));
     const infl = mh.data.filter(r => r.metric !== 'Unemployment rate').map(r => N(r.value));
     const yDomain = [Math.min(0, d3.min(infl)), d3.max(infl)];
-    ['USD', 'EUR', 'GBP'].forEach(e => lineChart(document.getElementById('infl-' + e), [
+    ['USD', 'EUR', 'GBP', 'JPY'].forEach(e => lineChart(document.getElementById('infl-' + e), [
       { name: e + ' headline', short: e, color: C[0], points: pts(e, 'Headline inflation') },
       { name: e + ' core', short: 'core', color: C[2], points: pts(e, 'Core inflation') },
     ], { height: 150, yDomain, endLabels: true, yFmt: v => v.toFixed(1) + '%', xFmt: d3.utcFormat('%Y'), tipX: d3.utcFormat('%b %Y'), label: e + ' inflation' }));
