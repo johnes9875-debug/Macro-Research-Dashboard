@@ -3,3 +3,5 @@ __pycache__/
 data/raw/
 data/latest.parquet
 data/outputs/
+data/calendar_releases.parquet
+data/dots_vintages.json

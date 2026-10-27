@@ -71,3 +71,25 @@ series:
   - {id: JP_30Y,        economy: JPY, name: JGB 30y, source: mof, code: 30Y, freq: D, transform: level, tenor: 30}
   - {id: JP_UNEMP,      economy: JPY, name: Unemployment rate (OECD via FRED), source: fred, code: LRHUTTTTJPM156S, freq: M, transform: level, tier: 1}
   # Japan CPI: needs a free e-Stat app ID (api.e-stat.go.jp). Not yet collected.
+
+  # ---------------- Added Oct 2026: policy, liquidity, cross-asset, inflation expectations ----------------
+  - {id: US_DOTS,       economy: USD, name: FOMC median dot (year-end),        source: fred, code: FEDTARMD,     freq: A, transform: level}
+  - {id: US_DOTS_LR,    economy: USD, name: FOMC median dot (longer run),      source: fred, code: FEDTARMDLR,   freq: A, transform: level}
+  - {id: US_TP10,       economy: USD, name: 10y term premium (Kim-Wright),     source: fred, code: THREEFYTP10,  freq: W, transform: level}
+  - {id: US_FED_ASSETS, economy: USD, name: Fed total assets ($m),             source: fred, code: WALCL,        freq: W, transform: level}
+  - {id: US_RESERVES,   economy: USD, name: Bank reserves at the Fed ($m),     source: fred, code: WRESBAL,      freq: W, transform: level}
+  - {id: US_RRP,        economy: USD, name: Overnight reverse repo ($bn),      source: fred, code: RRPONTSYD,    freq: D, transform: level}
+  - {id: US_TGA,        economy: USD, name: Treasury General Account ($m),     source: fred, code: WTREGEN,      freq: W, transform: level}
+  - {id: US_IORB,       economy: USD, name: Interest on reserve balances,      source: fred, code: IORB,         freq: D, transform: level}
+  - {id: US_NFCI,       economy: USD, name: Chicago Fed financial conditions,  source: fred, code: NFCI,         freq: W, transform: level}
+  - {id: US_VIX,        economy: USD, name: VIX,                               source: fred, code: VIXCLS,       freq: D, transform: level}
+  - {id: US_IG_OAS,     economy: USD, name: US IG corporate OAS (%),           source: fred, code: BAMLC0A0CM,   freq: D, transform: level}
+  - {id: US_HY_OAS,     economy: USD, name: US high-yield OAS (%),             source: fred, code: BAMLH0A0HYM2, freq: D, transform: level}
+  - {id: US_DXY_BROAD,  economy: USD, name: Broad dollar index,                source: fred, code: DTWEXBGS,     freq: D, transform: level}
+  - {id: FX_EURUSD,     economy: EUR, name: EURUSD,                            source: fred, code: DEXUSEU,      freq: D, transform: level}
+  - {id: FX_USDJPY,     economy: JPY, name: USDJPY,                            source: fred, code: DEXJPUS,      freq: D, transform: level}
+  - {id: FX_GBPUSD,     economy: GBP, name: GBPUSD,                            source: fred, code: DEXUSUK,      freq: D, transform: level}
+  - {id: US_5Y5Y,       economy: USD, name: 5y5y forward inflation expectation, source: fred, code: T5YIFR,      freq: D, transform: level}
+  - {id: US_5Y_BEI,     economy: USD, name: 5y breakeven inflation,            source: fred, code: T5YIE,        freq: D, transform: level}
+  - {id: US_5Y_REAL,    economy: USD, name: 5y TIPS real yield,                source: fred, code: DFII5,        freq: D, transform: level}
+  # UK real and implied (RPI) inflation spot curves come from the BoE yield-curve files (UK_REAL_5Y/10Y, UK_INFL_5Y/10Y)

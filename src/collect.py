@@ -66,6 +66,19 @@ def fred(sid: str, code: str) -> pd.DataFrame:
     return _frame(sid, [o["date"] for o in obs], [o["value"] for o in obs])
 
 
+def fred_dots_prior() -> pd.DataFrame:
+    """FOMC median dots as published at the previous SEP (ALFRED vintage), series US_DOTS_PRIOR."""
+    k = os.environ["FRED_API_KEY"]
+    v = _get("https://api.stlouisfed.org/fred/series/vintagedates",
+             params=dict(series_id="FEDTARMD", api_key=k, file_type="json", sort_order="desc", limit=2)).json()["vintage_dates"]
+    prev = v[1]
+    obs = _get("https://api.stlouisfed.org/fred/series/observations",
+               params=dict(series_id="FEDTARMD", api_key=k, file_type="json", realtime_start=prev, realtime_end=prev)).json()["observations"]
+    df = _frame("US_DOTS_PRIOR", [o["date"] for o in obs], [o["value"] for o in obs])
+    (ROOT / "data" / "dots_vintages.json").write_text(f'{{"latest": "{v[0]}", "prior": "{prev}"}}')
+    return df
+
+
 def ecb(sid: str, code: str) -> pd.DataFrame:
     r = _get(f"https://data-api.ecb.europa.eu/service/data/{code}",
              params=dict(startPeriod=START[:7], format="csvdata"))
@@ -153,7 +166,8 @@ def boe_curves() -> pd.DataFrame:
     dest = RAW / "boe_yc"
     dest.mkdir(parents=True, exist_ok=True)
     base = "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/"
-    files = {"glcnominalddata.zip": None, "oisddata.zip": None, "latest-yield-curve-data.zip": None}
+    files = {"glcnominalddata.zip": None, "oisddata.zip": None, "glcrealddata.zip": None,
+             "glcinflationddata.zip": None, "latest-yield-curve-data.zip": None}
     for f in files:
         p = dest / f
         # archives change rarely: refresh weekly; latest month: every run
@@ -183,7 +197,81 @@ def boe_curves() -> pd.DataFrame:
     spot = spot[~spot.index.duplicated(keep="last")].sort_index()
     for y in (1.0, 2.0):
         frames.append(_frame(f"UK_OIS_{int(y)}Y", spot.index, spot[y]))
+    # UK real (index-linked) and implied inflation (RPI) spot curves, 5y and 10y
+    for prefix, tag in (("GLC Real", "REAL"), ("GLC Inflation", "INFL")):
+        c = pd.concat([_boe_curve_sheet(io.BytesIO(b), "4. spot curve") for b in members(prefix)])
+        c = c[~c.index.duplicated(keep="last")].sort_index()
+        c = c[c.index >= "2018-01-01"]
+        for y in (5.0, 10.0):
+            frames.append(_frame(f"UK_{tag}_{int(y)}Y", c.index, c[y]))
     return pd.concat(frames)
+
+
+def release_calendar() -> pd.DataFrame:
+    """Upcoming tier-1 release dates: US (FRED release dates), euro area (Eurostat euro-indicator
+    calendar) and UK (ONS 'Next release' field). Written to data/calendar_releases.parquet."""
+    today = pd.Timestamp.today().normalize()
+    end = today + pd.Timedelta(days=35)
+    rows = []
+    us = {10: "CPI", 50: "Employment report (payrolls)", 54: "Personal income & PCE", 53: "GDP",
+          192: "JOLTS job openings", 9: "Retail sales", 46: "PPI", 11: "Employment Cost Index",
+          180: "Initial jobless claims", 13: "Industrial production"}
+    from zoneinfo import ZoneInfo
+    SGT = ZoneInfo("Asia/Singapore")
+
+    def sgt(day: str, hhmm: str, tz: str) -> str:
+        h, m = map(int, hhmm.split(":"))
+        local = pd.Timestamp(day).to_pydatetime().replace(hour=h, minute=m, tzinfo=ZoneInfo(tz))
+        return local.astimezone(SGT).strftime("%Y-%m-%d %H:%M")
+
+    us_time = {192: "10:00", 13: "09:15"}  # everything else 08:30 New York time
+    for rid, name in us.items():
+        try:
+            j = _get("https://api.stlouisfed.org/fred/release/dates",
+                     params=dict(api_key=os.environ["FRED_API_KEY"], file_type="json", release_id=rid,
+                                 realtime_start=today.strftime("%Y-%m-%d"), realtime_end="9999-12-31",
+                                 include_release_dates_with_no_data="true", sort_order="asc", limit=10)).json()
+            for d in j.get("release_dates", []):
+                if pd.Timestamp(d["date"]) <= end:
+                    when = sgt(d["date"], us_time.get(rid, "08:30"), "America/New_York")
+                    rows.append({"date": when[:10], "economy": "USD", "release": name, "source": "FRED release calendar",
+                                 "sgt": when[11:], "period": "", "release_id": f"US{rid}"})
+        except Exception as e:
+            print(f"calendar US {name}: {e}")
+    try:
+        q = (f"start={today:%Y-%m-%d}T00%3A00%3A00%2B01%3A00&end={end:%Y-%m-%d}T00%3A00%3A00%2B01%3A00"
+             "&theme=0&category=0&keywords=&isEuroindicator=true&authorInclude=&authorExclude=")
+        ev = _get("https://ec.europa.eu/eurostat/o/calendars/eventsJson?" + q).json()
+        keep = ("inflation", "hicp", "gdp", "unemployment", "retail", "industrial production", "sentiment", "employment")
+        for e in ev:
+            t = e.get("title", "")
+            if any(k in t.lower() for k in keep):
+                # the feed marks times "Z" but they are Luxembourg local time (euro indicators publish at 11:00 CET)
+                day, hhmm = e["start"][:10], e["start"][11:16]
+                when = sgt(day, hhmm, "Europe/Luxembourg")
+                rows.append({"date": when[:10], "economy": "EUR", "release": t, "source": "Eurostat release calendar",
+                             "sgt": when[11:], "period": e.get("period", ""), "release_id": "EU:" + t.lower()})
+    except Exception as e:
+        print(f"calendar EUR: {e}")
+    ons = {"CPI (incl. core, services)": "/economy/inflationandpriceindices/timeseries/d7g7/mm23",
+           "Labour market (LFS, pay)": "/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx/lms",
+           "Monthly GDP": "/economy/grossdomesticproductgdp/timeseries/ecy2/mgdp"}
+    for name, uri in ons.items():
+        try:
+            txt = _get("https://www.ons.gov.uk/generator", params=dict(format="csv", uri=uri)).text
+            for line in txt.splitlines()[:12]:
+                if line.startswith('"Next release"'):
+                    d = pd.to_datetime(line.split('","')[1].strip('"'), format="%d %B %Y", errors="coerce")
+                    if pd.notna(d) and d <= end:
+                        when = sgt(d.strftime("%Y-%m-%d"), "07:00", "Europe/London")
+                        rows.append({"date": when[:10], "economy": "GBP", "release": name,
+                                     "source": "ONS next-release date", "sgt": when[11:], "period": "", "release_id": "UK:" + name})
+        except Exception as e:
+            print(f"calendar GBP {name}: {e}")
+    cal = pd.DataFrame(rows).drop_duplicates()
+    cal.to_parquet(ROOT / "data" / "calendar_releases.parquet", index=False)
+    print(f"release calendar: {len(cal)} upcoming releases")
+    return cal
 
 
 def boj(sid: str, code: str) -> pd.DataFrame:
@@ -262,11 +350,16 @@ def main() -> int:
                 mof_items.append((sid, code))
         except Exception as e:  # keep going; report at the end
             errors.append(f"{sid}: {e}")
-    for name, fn in (("boe_iadb", lambda: boe_iadb(iadb)), ("mof", lambda: mof(mof_items)), ("boe_curve", boe_curves)):
+    for name, fn in (("boe_iadb", lambda: boe_iadb(iadb)), ("mof", lambda: mof(mof_items)), ("boe_curve", boe_curves),
+                     ("fred_dots_prior", fred_dots_prior)):
         try:
             frames.append(fn())
         except Exception as e:
             errors.append(f"{name}: {e}")
+    try:
+        release_calendar()
+    except Exception as e:
+        errors.append(f"release_calendar: {e}")
     data = pd.concat(frames, ignore_index=True)
     added = save(data)
     summary = data.groupby("series_id").agg(first=("date", "min"), last=("date", "max"), n=("value", "size"))

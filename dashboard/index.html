@@ -82,6 +82,17 @@
           padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: 11px; white-space: nowrap; z-index: 4; display: none; font-family: var(--mono); }
 .rm-tip .d { color: var(--cds-text-secondary); margin-bottom: 2px; font-family: var(--font-anthropic-sans); }
 .rm-tip .sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+.rm-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.rm-chip { font: inherit; font-size: 11px; letter-spacing: .06em; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--color-border-line); background: var(--color-panel); color: var(--color-fg-muted); cursor: pointer; }
+.rm-chip[aria-pressed="true"] { color: var(--color-fg); border-color: var(--color-fg); font-weight: 600; }
+.rm-table tr.rm-t1 td { font-weight: 600; }
+.rm-table tr.rm-cb td { background: color-mix(in srgb, var(--color-warn) 8%, transparent); }
+.rm-table tr.rm-today td:first-child { box-shadow: inset 3px 0 0 var(--color-warn); }
+.rm-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: var(--cds-gap-sm); }
+.rm-kpi { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 10px 12px; }
+.rm-kpi .l { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--color-fg-muted); }
+.rm-kpi .v { font-family: var(--mono); font-size: 20px; font-weight: 500; margin-top: 2px; }
+.rm-kpi .c { font-family: var(--mono); font-size: 12px; color: var(--color-fg-muted); }
 .rm-foot { color: var(--color-fg-muted); font-size: 11px; line-height: 1.5; border-top: 1px solid var(--color-border-line); padding-top: 10px; }
 .rm-foot p { margin: 0 0 4px; }
 [data-dash-source-state=empty] { color: transparent; }
@@ -151,7 +162,7 @@
     </div>
   </section>
 
-  <nav class="rm-tabs" role="tablist"><button class="rm-tab" role="tab" data-tab="overview" id="tab-overview">Overview</button><button class="rm-tab" role="tab" data-tab="curves" id="tab-curves">Curves & RV</button><button class="rm-tab" role="tab" data-tab="pricing" id="tab-pricing">Policy pricing</button><button class="rm-tab" role="tab" data-tab="macro" id="tab-macro">Macro</button><button class="rm-tab" role="tab" data-tab="health" id="tab-health">Data health</button></nav>
+  <nav class="rm-tabs" role="tablist"><button class="rm-tab" role="tab" data-tab="overview" id="tab-overview">Overview</button><button class="rm-tab" role="tab" data-tab="calendar" id="tab-calendar">Calendar</button><button class="rm-tab" role="tab" data-tab="pricing" id="tab-pricing">Policy pricing</button><button class="rm-tab" role="tab" data-tab="curves" id="tab-curves">Curves & RV</button><button class="rm-tab" role="tab" data-tab="liquidity" id="tab-liquidity">Liquidity</button><button class="rm-tab" role="tab" data-tab="cross" id="tab-cross">Cross-asset</button><button class="rm-tab" role="tab" data-tab="macro" id="tab-macro">Macro</button><button class="rm-tab" role="tab" data-tab="health" id="tab-health">Data health</button></nav>
 
   <!-- OVERVIEW -->
   <div class="rm-pane" id="pane-overview" role="tabpanel">
@@ -176,11 +187,25 @@
       </div>
     </section>
 
-    <section id="cal">
-      <div class="rm-sec-h"><h2>Central bank calendar</h2></div>
+    <section id="week">
+      <div class="rm-sec-h"><h2>Next 7 days</h2><p>Tier-1 data and central bank decisions, Singapore time. Full list in the Calendar tab.</p></div>
       <div class="rm-tw">
-        <table class="rm-table" id="cal-table" data-source="calendar" data-row-key="key">
-          <thead><tr><th class="t" data-field="date">Decision</th><th class="t" data-field="cb">Bank</th><th class="t" data-field="economy">Ccy</th><th class="t" data-field="sgt">Singapore time</th></tr></thead>
+        <table class="rm-table" id="week-table" data-source="econ_calendar" data-row-key="key">
+          <thead><tr><th class="t" data-field="date">Date</th><th class="t" data-field="sgt">SGT</th><th class="t" data-field="economy">Ccy</th><th class="t" data-field="event">Event</th><th class="t" data-field="last">Last print</th><th data-field="days">Days</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="rm-pane" id="pane-calendar" role="tabpanel" hidden>
+    <section id="econcal">
+      <div class="rm-sec-h"><h2>Economic and central bank calendar</h2><p>Next five weeks, Singapore time (daylight-saving aware). Bold = tier 1; shaded = central bank decision. US from the FRED release calendar, euro area from Eurostat, UK from ONS next-release dates. Japan data releases not yet covered.</p></div>
+      <div class="rm-chips" id="cal-chips"></div>
+      <div class="rm-tw rm-scroll">
+        <table class="rm-table" id="econcal-table" data-source="econ_calendar" data-row-key="key">
+          <thead><tr><th class="t" data-field="date">Date</th><th class="t" data-field="sgt">SGT</th><th class="t" data-field="economy">Ccy</th><th class="t" data-field="kind">Type</th><th class="t" data-field="event">Event</th><th class="t" data-field="period">Period</th><th class="t" data-field="last">Last print</th><th data-field="days">Days</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -210,6 +235,11 @@
       <div class="rm-chart" id="snap-JPY" data-source="curves"></div>
     </div>
       </div>
+    </section>
+    <section id="tp">
+      <div class="rm-sec-h"><h2>US 10y: expected path vs term premium</h2><p>Kim-Wright model (Federal Reserve Board, via FRED, weekly lag): 10y yield = expected average short rate + term premium. Tells you whether the long end is moving on Fed expectations or on risk premium.</p></div>
+      <div class="rm-kpis" id="tp-kpis" data-source="term_premium"></div>
+      <div class="rm-card" style="margin-top:8px"><div class="rm-legend" id="tp-legend"></div><div class="rm-chart" id="tp-chart" data-source="term_premium" style="min-height:240px"></div></div>
     </section>
     <section id="rv">
       <div class="rm-sec-h"><h2>Curve and cross-market relative value</h2><p>Fly = 2×5y − 2y − 10y (negative = 5y rich). z vs the past year; |z| ≥ 1.5 highlighted.</p></div>
@@ -258,6 +288,19 @@
 
   <!-- POLICY PRICING -->
   <div class="rm-pane" id="pane-pricing" role="tabpanel" hidden>
+    <section id="dots">
+      <div class="rm-sec-h"><h2>Fed dots vs market</h2><p>FOMC median projection for the fed funds rate at each year-end (latest and prior SEP) against the Treasury-curve forward rate for the same date. The Treasury forward includes term premium and bill-specific effects, so it sits above a pure OIS path at longer horizons.</p></div>
+      <div class="rm-grid-2">
+        <div class="rm-card"><div class="rm-legend" id="dots-legend"></div><div class="rm-chart" id="dots-chart" data-source="fed_dots" style="min-height:240px"></div></div>
+        <div class="rm-tw">
+          <table class="rm-table" id="dots-table" data-source="fed_dots" data-row-key="horizon">
+            <thead><tr><th class="t" data-field="horizon">Horizon</th><th data-field="dot_median">Dot %</th><th data-field="dot_prior">Prior SEP</th><th data-field="dot_change_bp">Δ dot</th><th data-field="market">Market %</th><th data-field="market_minus_dot_bp">Mkt − dot</th><th data-field="dot_vs_policy_bp">Dot vs today</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <p class="rm-note" style="padding:0 10px 8px">SEP <span data-source="fed_dots" data-field="sep" data-row="0"></span> vs prior <span data-source="fed_dots" data-field="sep_prior" data-row="0"></span>; market as of <span data-source="fed_dots" data-field="market_asof" data-row="0"></span>.</p>
+        </div>
+      </div>
+    </section>
     <section id="boe">
       <div class="rm-sec-h"><h2>Bank of England · meeting-by-meeting</h2><p>Expected Bank Rate after each MPC from the BoE OIS forward curve (average forward to the next meeting, adjusted for the SONIA–Bank Rate basis). Curve date <span data-source="boe_meetings" data-field="curve_date" data-row="0"></span>. Bars: cumulative bp; tick: 1 week earlier.</p></div>
       <div class="rm-grid-2">
@@ -293,6 +336,53 @@
     </section>
   </div>
 
+  <!-- LIQUIDITY -->
+  <div class="rm-pane" id="pane-liquidity" role="tabpanel" hidden>
+    <section id="liq">
+      <div class="rm-sec-h"><h2>US liquidity and funding</h2><p>Reserves are what quantitative tightening drains; the reverse repo is the buffer (now near zero); the Treasury's cash balance (TGA) pulls reserves out when it rises. SOFR trading above IORB is the early sign of funding pressure. Weekly series are Wednesday levels.</p></div>
+      <div class="rm-tw">
+        <table class="rm-table" id="liq-table" data-source="liquidity" data-row-key="key">
+          <thead><tr><th class="t" data-field="measure">Measure</th><th data-field="value">Level</th><th class="t" data-field="unit">Unit</th><th data-field="spark">1y</th><th data-field="chg_1w">Δ1w</th><th data-field="chg_1m">Δ1m</th><th data-field="chg_3m">Δ3m</th><th data-field="chg_1y">Δ1y</th><th data-field="pctile_1y">1y pctile</th><th data-field="date">As of</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+    <section id="liq-charts">
+      <div class="rm-grid-2">
+        <div class="rm-card"><div class="rm-card-h"><span>Reserves, TGA and reverse repo, $bn</span></div><div class="rm-legend" id="liq-legend"></div><div class="rm-chart" id="liq-chart" data-source="liquidity_hist" style="min-height:240px"></div></div>
+        <div class="rm-card"><div class="rm-card-h"><span>SOFR and EFFR vs IORB, bp</span></div><div class="rm-legend" id="fund-legend"></div><div class="rm-chart" id="fund-chart" data-source="liquidity_hist" style="min-height:240px"></div></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- CROSS-ASSET -->
+  <div class="rm-pane" id="pane-cross" role="tabpanel" hidden>
+    <section id="xa">
+      <div class="rm-sec-h"><h2>Risk and FX</h2><p>Changes: points for VIX and the conditions index, bp for credit spreads, % for FX and the dollar index. Higher NFCI = tighter conditions.</p></div>
+      <div class="rm-tw">
+        <table class="rm-table" id="xa-table" data-source="cross_asset" data-row-key="key">
+          <thead><tr><th class="t" data-field="group"></th><th class="t" data-field="measure">Measure</th><th data-field="value">Level</th><th data-field="spark">3m</th><th data-field="chg_1w">Δ1w</th><th data-field="chg_1m">Δ1m</th><th data-field="chg_3m">Δ3m</th><th data-field="pctile_1y">1y pctile</th><th data-field="date">As of</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+    <section id="fxr">
+      <div class="rm-sec-h"><h2>FX vs 2-year rate differentials</h2><p>Fair value = one-year regression of the exchange rate (log) on the 2y spread. Misalignment = spot vs fair value; negative means the currency pair trades below what rates imply. A low correlation means rates are not the main driver.</p></div>
+      <div class="rm-tw">
+        <table class="rm-table" id="fxr-table" data-source="fx_rates" data-row-key="pair">
+          <thead><tr><th class="t" data-field="pair">Pair</th><th data-field="spot">Spot</th><th data-field="fair_value">Rate-implied</th><th data-field="misalignment_pct">Misalign %</th><th data-field="misalignment_z">z</th><th class="t" data-field="diff_label">2y spread</th><th data-field="diff_bp">bp</th><th data-field="diff_chg_1m_bp">Δ1m</th><th data-field="beta_pct_per_10bp">% per 10bp</th><th data-field="corr_26w">Corr 26w</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="rm-legend" id="fxr-legend" style="margin-top:8px"></div>
+      <div class="rm-grid">
+        <div class="rm-card"><div class="rm-card-h"><span>EURUSD</span></div><div class="rm-chart" id="fxr-EURUSD" data-source="fx_rates_hist"></div></div>
+        <div class="rm-card"><div class="rm-card-h"><span>GBPUSD</span></div><div class="rm-chart" id="fxr-GBPUSD" data-source="fx_rates_hist"></div></div>
+        <div class="rm-card"><div class="rm-card-h"><span>USDJPY</span></div><div class="rm-chart" id="fxr-USDJPY" data-source="fx_rates_hist"></div></div>
+      </div>
+    </section>
+  </div>
+
   <!-- MACRO -->
   <div class="rm-pane" id="pane-macro" role="tabpanel" hidden>
     <section id="macro">
@@ -315,6 +405,23 @@
         </div>
       </div>
     </section>
+    <section id="ie">
+      <div class="rm-sec-h"><h2>Inflation expectations and real yields</h2><p>US from TIPS (CPI-linked); UK from index-linked gilts, which are RPI-linked (RPI has run about 1pp above CPI). 5y5y = expected inflation over the five years starting five years ahead, the gauge central banks watch for de-anchoring.</p></div>
+      <div class="rm-grid-2">
+        <div class="rm-tw">
+          <table class="rm-table" id="ie-table" data-source="infl_expect" data-row-key="key">
+            <thead><tr><th class="t" data-field="economy"></th><th class="t" data-field="measure">Measure</th><th data-field="value">%</th><th data-field="chg_1w_bp">Δ1w</th><th data-field="chg_1m_bp">Δ1m</th><th data-field="chg_3m_bp">Δ3m</th><th data-field="pctile_1y">1y pctile</th><th data-field="low_1y">1y low</th><th data-field="high_1y">1y high</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="rm-card">
+          <div class="rm-card-h"><span>5y5y forward inflation, %</span></div><div class="rm-legend" id="ie-legend"></div>
+          <div class="rm-chart" id="ie-chart" data-source="infl_expect_hist" style="min-height:180px"></div>
+          <div class="rm-card-h" style="margin-top:10px"><span>10y real yields, %</span></div>
+          <div class="rm-chart" id="real-chart" data-source="infl_expect_hist" style="min-height:180px"></div>
+        </div>
+      </div>
+    </section>
   </div>
 
   <!-- DATA HEALTH -->
@@ -331,7 +438,7 @@
   </div>
 
   <footer class="rm-foot">
-    <p>Sources: FRED, ECB Data Portal, Eurostat (HICP, ECOICOP 2), ONS, Bank of England (IADB, yield curves), Bank of Japan, Japan MoF. Refreshed twice daily (06:00 and 23:00 SGT).</p>
+    <p>Sources: FRED, ECB Data Portal, Eurostat (HICP, ECOICOP 2), ONS, Bank of England (IADB, yield curves), Bank of Japan, Japan MoF; Federal Reserve Board (dots, Kim-Wright term premium, H.4.1), ICE BofA credit indices and CBOE VIX via FRED; Eurostat and ONS release calendars. Refreshed twice daily (06:00 and 23:00 SGT).</p>
     <p>USD, EUR and JPY policy paths are government-curve proxies carrying term premium and supply effects: read direction and shape, not exact bp. US y/y rates are computed on the calendar, so the missing Oct 2025 CPI does not distort them.</p>
   </footer>
 </div>
@@ -355,7 +462,7 @@
   const fmtDate = d3.utcFormat('%-d %b %Y');
   const fmtShort = d3.utcFormat('%-d %b');
   const parse = s => new Date(String(s).slice(0, 10) + 'T00:00:00Z');
-  const N = v => v == null ? null : Number(v);
+  const N = v => (v == null || v === '' || (typeof v === 'number' && isNaN(v))) ? null : Number(v);
   const dirCls = v => v == null || v === 0 ? 'rm-flat' : v > 0 ? 'rm-up' : 'rm-dn';
 
   // tabs
@@ -547,12 +654,6 @@
   });
 
   // ---------- calendar
-  renders.push(() => {
-    const cal = dash.data('calendar'); if (cal.status !== 'ok') return;
-    const tb = document.querySelector('#cal-table tbody'); tb.innerHTML = '';
-    cal.data.forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.key; td(tr, fmtDate(parse(r.date)), 't'); td(tr, r.cb, 't rm-strong'); td(tr, r.economy, 't'); td(tr, r.sgt, 't'); tb.appendChild(tr); });
-  });
-
   // ---------- curve snapshots
   renders.push(() => {
     legend('snap-legend', [['Today', C[0]], ['1 week ago', 'var(--cds-chart-muted)', true], ['1 month ago', 'var(--cds-chart-muted)']]);
@@ -631,7 +732,7 @@
     bm.data.forEach(r => {
       const tr = document.createElement('tr'); tr.dataset.key = r.date;
       td(tr, d3.utcFormat('%-d %b %y')(parse(r.date)), 't'); td(tr, N(r.implied_rate).toFixed(2), 'rm-strong'); td(tr, sgn(N(r.change_bp), 1));
-      td(tr, String(N(r.hike_odds_pct)) + '%'); td(tr, sgn(N(r.cumulative_bp))); td(tr, r.cumulative_bp_1w == null ? '—' : sgn(N(r.cumulative_bp_1w)), 'rm-flat');
+      td(tr, String(N(r.hike_odds_pct)) + '%'); td(tr, sgn(N(r.cumulative_bp))); td(tr, N(r.cumulative_bp_1w) == null ? '—' : sgn(N(r.cumulative_bp_1w)), 'rm-flat');
       tb.appendChild(tr);
     });
     if (!visible(el)) return;
@@ -647,7 +748,7 @@
     const bw = Math.min(30, x.bandwidth()), off = (x.bandwidth() - bw) / 2;
     svg.append('g').selectAll('rect').data(bm.data).join('rect').attr('x', r => x(r.date) + off).attr('width', bw)
       .attr('y', r => y(Math.max(0, N(r.cumulative_bp)))).attr('height', r => Math.abs(y(N(r.cumulative_bp)) - y(0))).attr('rx', 3).attr('fill', C[0]);
-    svg.append('g').selectAll('line.wk').data(bm.data.filter(r => r.cumulative_bp_1w != null)).join('line').attr('x1', r => x(r.date) + off - 3).attr('x2', r => x(r.date) + off + bw + 3)
+    svg.append('g').selectAll('line.wk').data(bm.data.filter(r => N(r.cumulative_bp_1w) != null)).join('line').attr('x1', r => x(r.date) + off - 3).attr('x2', r => x(r.date) + off + bw + 3)
       .attr('y1', r => y(N(r.cumulative_bp_1w))).attr('y2', r => y(N(r.cumulative_bp_1w))).attr('stroke', 'var(--color-fg)').attr('stroke-width', 2);
     if (bw >= 22) svg.append('g').selectAll('text.v').data(bm.data).join('text').attr('x', r => x(r.date) + x.bandwidth() / 2).attr('y', r => y(Math.max(0, N(r.cumulative_bp))) - 5)
       .attr('text-anchor', 'middle').attr('font-size', 10.5).attr('fill', 'var(--color-fg)').text(r => sgn(N(r.cumulative_bp)));
@@ -684,8 +785,8 @@
         const tr = document.createElement('tr'); tr.dataset.key = r.key; if (last && r.economy !== last) tr.className = 'rm-grp';
         const dec = v => String(v ?? '').includes('.') ? String(v).split('.')[1].length : 0;
         const d = Math.min(2, Math.max(dec(r.value), dec(r.prior)));
-        td(tr, r.economy !== last ? r.economy : '', 't rm-eco'); td(tr, r.metric, 't'); td(tr, num(N(r.value), d), 'rm-strong'); td(tr, r.prior == null ? '—' : num(N(r.prior), d), 'rm-flat');
-        td(tr, r.change == null ? '—' : sgn(N(r.change), d)); td(tr, d3.utcFormat('%b %Y')(parse(r.period)), 'rm-flat');
+        td(tr, r.economy !== last ? r.economy : '', 't rm-eco'); td(tr, r.metric, 't'); td(tr, num(N(r.value), d), 'rm-strong'); td(tr, N(r.prior) == null ? '—' : num(N(r.prior), d), 'rm-flat');
+        td(tr, N(r.change) == null ? '—' : sgn(N(r.change), d)); td(tr, d3.utcFormat('%b %Y')(parse(r.period)), 'rm-flat');
         last = r.economy; tb.appendChild(tr);
       });
     }
@@ -713,6 +814,196 @@
       td(tr, fmtDate(parse(r.last_obs))); td(tr, String(N(r.age_days)), r.status === 'Stale' ? 'rm-bad' : '');
       tb.appendChild(tr);
     });
+  });
+
+  // ---------- economic calendar (overview next 7 days + calendar tab)
+  let calFilter = 'All';
+  const calRow = (r, full) => {
+    const tr = document.createElement('tr'); tr.dataset.key = r.key;
+    if (N(r.tier) === 1) tr.classList.add('rm-t1');
+    if (r.kind === 'Central bank') tr.classList.add('rm-cb');
+    if (N(r.days) === 0) tr.classList.add('rm-today');
+    td(tr, d3.utcFormat('%a %-d %b')(parse(r.date)), 't'); td(tr, r.sgt || '', 't'); td(tr, r.economy, 't');
+    if (full) td(tr, r.kind, 't');
+    td(tr, r.event, 't');
+    if (full) td(tr, r.period || '', 't rm-flat');
+    td(tr, r.last || '', 't rm-flat');
+    const dc = td(tr, N(r.days) === 0 ? 'today' : String(N(r.days))); if (N(r.days) <= 2) dc.classList.add('rm-warn');
+    return tr;
+  };
+  renders.push(() => {
+    const ec = dash.data('econ_calendar'); if (ec.status !== 'ok') return;
+    const wk = document.querySelector('#week-table tbody'); wk.innerHTML = '';
+    ec.data.filter(r => N(r.days) >= 0 && N(r.days) <= 7 && (N(r.tier) === 1 || r.kind === 'Central bank')).forEach(r => wk.appendChild(calRow(r, false)));
+    const chips = document.getElementById('cal-chips');
+    if (!chips.childElementCount) ['All', 'USD', 'EUR', 'GBP', 'JPY', 'Tier 1'].forEach(c => {
+      const b = document.createElement('button'); b.className = 'rm-chip'; b.textContent = c; b.type = 'button';
+      b.addEventListener('click', () => { calFilter = c; runAll(); }); chips.appendChild(b);
+    });
+    chips.querySelectorAll('.rm-chip').forEach(b => b.setAttribute('aria-pressed', String(b.textContent === calFilter)));
+    const tb = document.querySelector('#econcal-table tbody'); tb.innerHTML = '';
+    ec.data.filter(r => calFilter === 'All' || r.economy === calFilter || (calFilter === 'Tier 1' && N(r.tier) === 1))
+      .forEach(r => tb.appendChild(calRow(r, true)));
+  });
+
+  // ---------- Fed dots vs market
+  renders.push(() => {
+    const fd = dash.data('fed_dots'), el = document.getElementById('dots-chart');
+    if (bad(fd.status)) return failBox(el);
+    if (fd.status !== 'ok') return;
+    const tb = document.querySelector('#dots-table tbody'); tb.innerHTML = '';
+    fd.data.forEach(r => {
+      const tr = document.createElement('tr'); tr.dataset.key = r.horizon;
+      td(tr, r.horizon, 't'); td(tr, N(r.dot_median) == null ? '—' : N(r.dot_median).toFixed(2), 'rm-strong'); td(tr, N(r.dot_prior) == null ? '—' : N(r.dot_prior).toFixed(2), 'rm-flat');
+      td(tr, sgn(N(r.dot_change_bp)), dirCls(N(r.dot_change_bp))); td(tr, N(r.market) == null ? '—' : N(r.market).toFixed(2));
+      td(tr, sgn(N(r.market_minus_dot_bp)), 'rm-strong'); td(tr, sgn(N(r.dot_vs_policy_bp)), 'rm-flat'); tb.appendChild(tr);
+    });
+    const r0 = fd.data[0];
+    document.querySelectorAll('[data-source="fed_dots"][data-row="0"]').forEach(e => e.textContent = r0[e.dataset.field] ? fmtDate(parse(r0[e.dataset.field])) : '—');
+    legend('dots-legend', [['FOMC median dot', C[0]], ['Prior SEP', 'var(--cds-chart-muted)'], ['Treasury forward', C[1]], ['Policy midpoint today', 'var(--cds-chart-axis)', true]]);
+    if (!visible(el)) return;
+    el.innerHTML = '';
+    const W = Math.max(280, el.clientWidth), H = 240, mg = { t: 12, r: 12, b: 26, l: 40 };
+    const hz = fd.data.map(r => r.horizon);
+    const x = d3.scalePoint().domain(hz).range([mg.l + 20, W - mg.r - 20]);
+    const vals = fd.data.flatMap(r => [N(r.dot_median), N(r.dot_prior), N(r.market)]).concat([N(r0.policy_mid)]).filter(v => v != null);
+    const y = d3.scaleLinear().domain([d3.min(vals) - 0.2, d3.max(vals) + 0.2]).nice().range([H - mg.b, mg.t]);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Fed dots vs Treasury forwards');
+    svg.append('g').selectAll('line').data(y.ticks(5)).join('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
+    svg.append('g').selectAll('text').data(y.ticks(5)).join('text').attr('x', mg.l - 6).attr('y', d => y(d) + 4).attr('text-anchor', 'end').attr('font-size', 10.5).attr('fill', 'var(--color-fg-muted)').text(d => d.toFixed(1) + '%');
+    svg.append('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', y(N(r0.policy_mid))).attr('y2', y(N(r0.policy_mid))).attr('stroke', 'var(--cds-chart-axis)').attr('stroke-dasharray', '4 4');
+    svg.append('g').selectAll('text.x').data(hz).join('text').attr('x', d => x(d)).attr('y', H - 8).attr('text-anchor', 'middle').attr('font-size', 10.5).attr('fill', 'var(--color-fg-muted)').text(d => d.replace('End-', ''));
+    const mk = fd.data.filter(r => N(r.market) != null);
+    svg.append('path').datum(mk).attr('fill', 'none').attr('stroke', C[1]).attr('stroke-width', 2).attr('stroke-linejoin', 'round').attr('d', d3.line().x(r => x(r.horizon)).y(r => y(N(r.market))));
+    svg.append('g').selectAll('circle.m').data(mk).join('circle').attr('cx', r => x(r.horizon)).attr('cy', r => y(N(r.market))).attr('r', 3).attr('fill', C[1]);
+    svg.append('g').selectAll('circle.p').data(fd.data.filter(r => N(r.dot_prior) != null)).join('circle').attr('cx', r => x(r.horizon)).attr('cy', r => y(N(r.dot_prior))).attr('r', 5).attr('fill', 'none').attr('stroke', 'var(--cds-chart-muted)').attr('stroke-width', 1.5);
+    svg.append('g').selectAll('circle.d').data(fd.data).join('circle').attr('cx', r => x(r.horizon)).attr('cy', r => y(N(r.dot_median))).attr('r', 5.5).attr('fill', C[0]);
+    svg.append('g').selectAll('text.d').data(fd.data).join('text').attr('x', r => x(r.horizon) + 9).attr('y', r => y(N(r.dot_median)) + 4).attr('font-size', 10.5).attr('fill', 'var(--color-fg)').text(r => N(r.dot_median).toFixed(2));
+  });
+
+  // ---------- term premium
+  renders.push(() => {
+    const tp = dash.data('term_premium'), el = document.getElementById('tp-chart'), k = document.getElementById('tp-kpis');
+    if (bad(tp.status)) return failBox(el);
+    if (tp.status !== 'ok' || !tp.data.length) return;
+    const rows = tp.data, last = rows[rows.length - 1];
+    const at = days => { const t = parse(last.date) - days * 864e5; let p = null; rows.forEach(r => { if (parse(r.date) <= t) p = r; }); return p; };
+    const m1 = at(28), y1 = at(364);
+    k.innerHTML = '';
+    [['10y yield', N(last.y10), null], ['Expected path', N(last.expected_path), m1 && (N(last.expected_path) - N(m1.expected_path)) * 100], ['Term premium', N(last.term_premium), m1 && (N(last.term_premium) - N(m1.term_premium)) * 100],
+     ['Term premium Δ1y', null, y1 && (N(last.term_premium) - N(y1.term_premium)) * 100]].forEach(([l, v, c]) => {
+      const d = document.createElement('div'); d.className = 'rm-kpi';
+      const a = document.createElement('div'); a.className = 'l'; a.textContent = l; d.appendChild(a);
+      const b = document.createElement('div'); b.className = 'v'; b.textContent = v == null ? sgn(c) + 'bp' : v.toFixed(2) + '%'; d.appendChild(b);
+      const e = document.createElement('div'); e.className = 'c'; e.textContent = v == null ? 'vs a year ago' : (c == null ? 'week to ' + fmtShort(parse(last.date)) : sgn(c) + 'bp over 1m'); d.appendChild(e);
+      k.appendChild(d);
+    });
+    legend('tp-legend', [['10y yield', 'var(--color-fg)'], ['Expected path', C[0]], ['Term premium', C[1]]]);
+    if (!visible(el)) return;
+    const pts = f => rows.map(r => ({ x: parse(r.date), y: N(r[f]) }));
+    lineChart(el, [
+      { name: '10y yield', color: 'var(--color-fg)', width: 1.5, points: pts('y10') },
+      { name: 'Expected path', color: C[0], points: pts('expected_path') },
+      { name: 'Term premium', color: C[1], points: pts('term_premium') },
+    ], { height: 240, zero: true, yFmt: v => v.toFixed(1) + '%', xFmt: d3.utcFormat('%Y'), tipX: v => 'Week to ' + fmtDate(v), label: 'US 10y decomposition' });
+  });
+
+  // ---------- liquidity
+  renders.push(() => {
+    const lq = dash.data('liquidity'), lh = dash.data('liquidity_hist');
+    if (lq.status === 'ok') {
+      const tb = document.querySelector('#liq-table tbody'); tb.innerHTML = '';
+      lq.data.forEach(r => {
+        const tr = document.createElement('tr'); tr.dataset.key = r.key;
+        const d = r.unit === 'bp' ? 0 : (Math.abs(N(r.value)) < 10 ? 1 : 0);
+        const f = v => r.unit === 'bp' ? sgn(N(v)) : (N(v) == null ? '—' : (N(v) < 0 ? '−' : '') + d3.format(',.' + d + 'f')(Math.abs(N(v))));
+        const fc = v => N(v) == null ? '—' : (N(v) > 0 ? '+' : N(v) < 0 ? '−' : '') + d3.format(',.' + d + 'f')(Math.abs(N(v)));
+        td(tr, r.measure, 't'); td(tr, f(r.value), 'rm-strong'); td(tr, r.unit, 't rm-flat');
+        const sc = td(tr, ''); const sp = document.createElement('span'); sp.className = 'rm-cellspark'; sc.appendChild(sp);
+        ['chg_1w', 'chg_1m', 'chg_3m', 'chg_1y'].forEach(c => td(tr, fc(r[c]), 'rm-flat'));
+        td(tr, String(N(r.pctile_1y))); td(tr, fmtShort(parse(r.date)), 'rm-flat');
+        tb.appendChild(tr);
+        try { if (visible(tb)) spark(sp, r.spark, 72, 16); } catch (e) { console.error(e); }
+      });
+    }
+    legend('liq-legend', [['Reserves', C[0]], ['TGA', C[1]], ['Reverse repo', C[2]]]);
+    legend('fund-legend', [['SOFR − IORB', C[0]], ['EFFR − IORB', C[1]]]);
+    const el1 = document.getElementById('liq-chart'), el2 = document.getElementById('fund-chart');
+    if (bad(lh.status)) { failBox(el1); failBox(el2); return; }
+    if (lh.status !== 'ok' || !visible(el1)) return;
+    const pts = k => lh.data.filter(r => r.key === k).map(r => ({ x: parse(r.date), y: N(r.value) }));
+    lineChart(el1, [{ name: 'Reserves', color: C[0], points: pts('reserves') }, { name: 'TGA', color: C[1], points: pts('tga') }, { name: 'Reverse repo', color: C[2], points: pts('rrp') }],
+      { height: 240, yDomain: [0, d3.max(lh.data.filter(r => ['reserves', 'tga', 'rrp'].includes(r.key)), r => N(r.value))], yFmt: v => d3.format(',.0f')(v), xFmt: d3.utcFormat('%Y'), tipX: v => 'Week to ' + fmtDate(v), label: 'Reserves, TGA and RRP' });
+    lineChart(el2, [{ name: 'SOFR − IORB', color: C[0], points: pts('sofr_iorb') }, { name: 'EFFR − IORB', color: C[1], points: pts('effr_iorb') }],
+      { height: 240, zero: true, yFmt: v => sgn(v), xFmt: d3.utcFormat('%Y'), tipX: v => 'Week to ' + fmtDate(v), label: 'Funding spreads' });
+  });
+
+  // ---------- cross-asset
+  renders.push(() => {
+    const xa = dash.data('cross_asset');
+    if (xa.status === 'ok') {
+      const tb = document.querySelector('#xa-table tbody'); tb.innerHTML = ''; let last = null;
+      xa.data.forEach(r => {
+        const tr = document.createElement('tr'); tr.dataset.key = r.key; if (last && r.group !== last) tr.className = 'rm-grp';
+        const dec = r.key === 'eurusd' || r.key === 'gbpusd' ? 4 : r.key === 'nfci' ? 2 : r.key === 'usdjpy' ? 2 : r.unit === 'bp' ? 0 : 1;
+        const cd = r.chg_unit === '%' ? 2 : dec;
+        td(tr, r.group !== last ? r.group : '', 't rm-eco'); td(tr, r.measure, 't'); td(tr, num(N(r.value), dec), 'rm-strong');
+        const sc = td(tr, ''); const sp = document.createElement('span'); sp.className = 'rm-cellspark'; sc.appendChild(sp);
+        ['chg_1w', 'chg_1m', 'chg_3m'].forEach(c => td(tr, sgn(N(r[c]), cd) + (r.chg_unit === '%' && N(r[c]) != null ? '%' : ''), 'rm-flat'));
+        const pc = td(tr, String(N(r.pctile_1y))); if (N(r.pctile_1y) >= 90 || N(r.pctile_1y) <= 10) pc.classList.add('rm-warn');
+        td(tr, fmtShort(parse(r.date)), 'rm-flat');
+        last = r.group; tb.appendChild(tr);
+        try { if (visible(tb)) spark(sp, r.spark, 72, 16); } catch (e) { console.error(e); }
+      });
+    }
+    const fr = dash.data('fx_rates'), fh = dash.data('fx_rates_hist');
+    if (fr.status === 'ok') {
+      const tb = document.querySelector('#fxr-table tbody'); tb.innerHTML = '';
+      fr.data.forEach(r => {
+        const tr = document.createElement('tr'); tr.dataset.key = r.pair; const dp = r.pair === 'USDJPY' ? 2 : 4;
+        td(tr, r.pair, 't rm-eco'); td(tr, N(r.spot).toFixed(dp), 'rm-strong'); td(tr, N(r.fair_value).toFixed(dp));
+        const mz = N(r.misalignment_z);
+        td(tr, sgn(N(r.misalignment_pct), 1) + '%', Math.abs(mz) >= 1.5 ? 'rm-warn rm-strong' : ''); td(tr, num(mz, 1), Math.abs(mz) >= 1.5 ? 'rm-warn rm-strong' : '');
+        td(tr, r.diff_label, 't rm-flat'); td(tr, sgn(N(r.diff_bp))); td(tr, sgn(N(r.diff_chg_1m_bp)), 'rm-flat');
+        td(tr, N(r.beta_pct_per_10bp).toFixed(2), 'rm-flat'); td(tr, N(r.corr_26w).toFixed(2), 'rm-flat');
+        tb.appendChild(tr);
+      });
+    }
+    legend('fxr-legend', [['Spot', C[0]], ['Rate-implied fair value', 'var(--cds-chart-muted)', true]]);
+    ['EURUSD', 'GBPUSD', 'USDJPY'].forEach(p => {
+      const el = document.getElementById('fxr-' + p);
+      if (bad(fh.status)) return failBox(el);
+      if (fh.status !== 'ok' || !visible(el)) return;
+      const rows = fh.data.filter(r => r.pair === p), dp = p === 'USDJPY' ? 1 : 3;
+      lineChart(el, [{ name: 'Fair value', color: 'var(--cds-chart-muted)', dash: '4 3', points: rows.map(r => ({ x: parse(r.date), y: N(r.fair_value) })) },
+                     { name: 'Spot', color: C[0], points: rows.map(r => ({ x: parse(r.date), y: N(r.spot) })) }],
+        { height: 180, yFmt: v => v.toFixed(dp), xFmt: d3.utcFormat("%b '%y"), tipX: v => 'Week to ' + fmtDate(v), label: p + ' vs rate-implied' });
+    });
+  });
+
+  // ---------- inflation expectations
+  renders.push(() => {
+    const ie = dash.data('infl_expect'), ih = dash.data('infl_expect_hist');
+    if (ie.status === 'ok') {
+      const tb = document.querySelector('#ie-table tbody'); tb.innerHTML = ''; let last = null;
+      ie.data.forEach(r => {
+        const tr = document.createElement('tr'); tr.dataset.key = r.key; if (last && r.economy !== last) tr.className = 'rm-grp';
+        td(tr, r.economy !== last ? r.economy : '', 't rm-eco'); td(tr, r.measure, 't'); td(tr, N(r.value).toFixed(2), 'rm-strong');
+        ['chg_1w_bp', 'chg_1m_bp', 'chg_3m_bp'].forEach(c => td(tr, sgn(N(r[c])), dirCls(N(r[c]))));
+        const pc = td(tr, String(N(r.pctile_1y))); if (N(r.pctile_1y) >= 90 || N(r.pctile_1y) <= 10) pc.classList.add('rm-warn');
+        td(tr, N(r.low_1y).toFixed(2), 'rm-flat'); td(tr, N(r.high_1y).toFixed(2), 'rm-flat');
+        last = r.economy; tb.appendChild(tr);
+      });
+    }
+    legend('ie-legend', [['US', C[0]], ['UK (RPI)', C[2]]]);
+    const e1 = document.getElementById('ie-chart'), e2 = document.getElementById('real-chart');
+    if (bad(ih.status)) { failBox(e1); failBox(e2); return; }
+    if (ih.status !== 'ok' || !visible(e1)) return;
+    const pts = n => ih.data.filter(r => r.series === n).map(r => ({ x: parse(r.date), y: N(r.value) }));
+    lineChart(e1, [{ name: 'US 5y5y', short: 'US', color: C[0], points: pts('US 5y5y') }, { name: 'UK 5y5y (RPI)', short: 'UK', color: C[2], points: pts('UK 5y5y (RPI)') }],
+      { height: 180, endLabels: true, yFmt: v => v.toFixed(1) + '%', xFmt: d3.utcFormat('%Y'), tipX: v => 'Week to ' + fmtDate(v), label: '5y5y inflation' });
+    lineChart(e2, [{ name: 'US 10y real', short: 'US', color: C[0], points: pts('US 10y real') }, { name: 'UK 10y real', short: 'UK', color: C[2], points: pts('UK 10y real') }],
+      { height: 180, endLabels: true, zero: true, yFmt: v => v.toFixed(1) + '%', xFmt: d3.utcFormat('%Y'), tipX: v => 'Week to ' + fmtDate(v), label: '10y real yields' });
   });
 
   dash.onData(runAll);

@@ -8,4 +8,5 @@ python3 src/collect.py || echo "WARNING: some sources failed (see ERRORS above);
 python3 src/compute.py
 (cd src && python3 monitor.py)
 python3 src/export_dashboard.py
+(cd src && python3 extras.py)
 echo "Pipeline finished. Dashboard datasets are in data/outputs/dash/"

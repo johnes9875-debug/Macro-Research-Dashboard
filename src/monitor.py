@@ -153,7 +153,7 @@ for r in now_strip:
 write("boe_meetings", boe)
 
 # ------------------------------------------------------------------ 5. data health
-MAX_AGE = {"D": 5, "W": 12, "M": 75, "Q": 200}
+MAX_AGE = {"D": 5, "W": 12, "M": 75, "Q": 200, "A": 400}
 today = pd.Timestamp.today().normalize()
 health = []
 for sid, g in D.groupby("series_id"):
