@@ -125,14 +125,15 @@ CB_SGT_TIME = {}
 for m in yaml.safe_load((ROOT / "config" / "calendar.yaml").read_text())["meetings"]:
     d = pd.Timestamp(m["date"])
     if TODAY <= d <= TODAY + pd.Timedelta(days=60):
-        pol = {"USD": C.us_policy, "EUR": lambda: s("EA_DFR"), "GBP": lambda: s("UK_BANKRATE"), "JPY": lambda: s("JP_CALL")}[m["economy"]]()
+        pol = C.ECON[m["economy"]]["policy"]() if m["economy"] in C.ECON else s("NZ_3M")
         # show the Singapore date and time: "29 Oct 02:00" -> 2026-10-29, 02:00
         sg_day = pd.to_datetime(f"{m['sgt'].split(',')[0].split(' ')[0]} {m['sgt'].split(',')[0].split(' ')[1]} {d.year}", format="%d %b %Y", errors="coerce")
         sg_day = d if pd.isna(sg_day) else sg_day
         cal_rows.append({"date": sg_day.strftime("%Y-%m-%d"), "sgt": m["sgt"].split(" ")[-1] if ":" in m["sgt"] else "midday", "economy": m["economy"], "kind": "Central bank",
                          "event": f"{m['cb']} policy decision", "period": "",
                          "last": (f"target {s('US_FF_LOWER').dropna().iloc[-1]:.2f}–{s('US_FF_UPPER').dropna().iloc[-1]:.2f}%" if m["economy"] == "USD"
-                                  else f"policy rate {pol.dropna().iloc[-1]:.2f}%"),
+                                  else ("NZ 3m bank bill " + f"{pol.dropna().iloc[-1]:.2f}% (monthly)" if m["economy"] == "NZD"
+                                        else f"policy rate {pol.dropna().iloc[-1]:.2f}%")),
                          "tier": 1, "source": "config/calendar.yaml", "sgt_note": m["sgt"]})
 cal = sorted(cal_rows, key=lambda r: (r["date"], r["sgt"] or "99"))
 for r in cal:
@@ -225,7 +226,10 @@ XA = [("vix", "VIX", s("US_VIX"), "", 1, "Risk"), ("ig", "US IG credit spread", 
       ("nfci", "Chicago Fed financial conditions", s("US_NFCI"), "index", 2, "Risk"),
       ("dxy", "Broad dollar index", s("US_DXY_BROAD"), "index", 1, "FX"),
       ("eurusd", "EURUSD", s("FX_EURUSD"), "", 4, "FX"), ("gbpusd", "GBPUSD", s("FX_GBPUSD"), "", 4, "FX"),
-      ("usdjpy", "USDJPY", s("FX_USDJPY"), "", 2, "FX")]
+      ("usdjpy", "USDJPY", s("FX_USDJPY"), "", 2, "FX"), ("audusd", "AUDUSD", s("FX_AUDUSD"), "", 4, "FX"),
+      ("usdcad", "USDCAD", s("FX_USDCAD"), "", 4, "FX"), ("usdchf", "USDCHF", s("FX_USDCHF"), "", 4, "FX"),
+      ("nzdusd", "NZDUSD", s("FX_NZDUSD"), "", 4, "FX"), ("usdsek", "USDSEK", s("FX_USDSEK"), "", 3, "FX"),
+      ("usdnok", "USDNOK", s("FX_USDNOK"), "", 3, "FX")]
 xa = []
 for key, label, x, unit, n, grp in XA:
     x = x.dropna()
@@ -246,7 +250,9 @@ write("cross_asset", xa)
 
 # ------------------------------------------------------------------ 6. FX vs 2y rate differential
 PAIRS = [("EURUSD", "FX_EURUSD", "EA_2Y", "US_2Y", "EUR 2y − US 2y"), ("GBPUSD", "FX_GBPUSD", "UK_2Y", "US_2Y", "UK 2y − US 2y"),
-         ("USDJPY", "FX_USDJPY", "US_2Y", "JP_2Y", "US 2y − JP 2y")]
+         ("USDJPY", "FX_USDJPY", "US_2Y", "JP_2Y", "US 2y − JP 2y"), ("AUDUSD", "FX_AUDUSD", "AU_2Y", "US_2Y", "AU 2y − US 2y"),
+         ("USDCAD", "FX_USDCAD", "US_2Y", "CA_2Y", "US 2y − CA 2y"), ("USDSEK", "FX_USDSEK", "US_2Y", "SE_2Y", "US 2y − SE 2y"),
+         ("USDNOK", "FX_USDNOK", "US_2Y", "NO_3Y", "US 2y − NO 3y")]
 fxr, fxh = [], []
 for pair, fx_id, a, b, diff_label in PAIRS:
     df = pd.concat([s(fx_id), s(a), s(b)], axis=1, sort=True).dropna()
@@ -258,9 +264,9 @@ for pair, fx_id, a, b, diff_label in PAIRS:
     resid = (np.log(yr.fx) - np.log(fair)) * 100
     wk = yr.resample("W-FRI").last().dropna()
     corr = np.corrcoef(wk.fx.pct_change().dropna().tail(26), wk["diff"].diff().dropna().tail(26))[0, 1]
-    fxr.append({"pair": pair, "spot": rnd(df.fx.iloc[-1], 4 if pair != "USDJPY" else 2), "diff_label": diff_label,
+    fxr.append({"pair": pair, "spot": rnd(df.fx.iloc[-1], 2 if pair == "USDJPY" else 3 if pair in ("USDSEK", "USDNOK") else 4), "diff_label": diff_label,
                 "diff_bp": rnd(df["diff"].iloc[-1], 0), "diff_chg_1m_bp": rnd(chg(df["diff"], 30), 0),
-                "fair_value": rnd(fair.iloc[-1], 4 if pair != "USDJPY" else 2), "misalignment_pct": rnd(resid.iloc[-1], 1),
+                "fair_value": rnd(fair.iloc[-1], 2 if pair == "USDJPY" else 3 if pair in ("USDSEK", "USDNOK") else 4), "misalignment_pct": rnd(resid.iloc[-1], 1),
                 "misalignment_z": rnd(resid.iloc[-1] / resid.std(), 1), "beta_pct_per_10bp": rnd(beta * 1000, 2),
                 "corr_26w": rnd(corr, 2), "date": df.index[-1].strftime("%Y-%m-%d")})
     for d, r in wk.iterrows():
@@ -289,7 +295,86 @@ for name, x in (("US 5y5y", s("US_5Y5Y")), ("UK 5y5y (RPI)", uk_55), ("US 10y re
 write("infl_expect", ie)
 write("infl_expect_hist", ieh)
 
-# ------------------------------------------------------------------ 8. brief facts (numbers the morning brief may use)
+# ------------------------------------------------------------------ 8. US Treasury supply (auctions)
+auc_rows, upc_rows = [], []
+ap = ROOT / "data" / "auctions.parquet"
+if ap.exists():
+    a = pd.read_parquet(ap)
+    for c in ("offering_amt", "bid_to_cover_ratio", "high_yield", "primary_dealer_accepted", "indirect_bidder_accepted",
+              "direct_bidder_accepted", "comp_accepted"):
+        a[c] = pd.to_numeric(a[c], errors="coerce")
+    a = a[a.floating_rate != "Yes"].copy()
+    a["kind"] = np.where(a.inflation_index_security == "Yes", "TIPS", a.security_type)
+    a["tenor"] = a.original_security_term.fillna(a.security_term)
+    a["dealer_pct"] = a.primary_dealer_accepted / a.comp_accepted * 100
+    a["indirect_pct"] = a.indirect_bidder_accepted / a.comp_accepted * 100
+    a["direct_pct"] = a.direct_bidder_accepted / a.comp_accepted * 100
+    a = a.sort_values("auction_date")
+    done = a[a.bid_to_cover_ratio.notna()]
+    for (kind, tenor), g in done.groupby(["kind", "tenor"]):
+        g = g.sort_values("auction_date")
+        g["btc_avg6"] = g.bid_to_cover_ratio.shift(1).rolling(6, min_periods=3).mean()
+        g["dealer_avg6"] = g.dealer_pct.shift(1).rolling(6, min_periods=3).mean()
+        g["indirect_avg6"] = g.indirect_pct.shift(1).rolling(6, min_periods=3).mean()
+        done.loc[g.index, ["btc_avg6", "dealer_avg6", "indirect_avg6"]] = g[["btc_avg6", "dealer_avg6", "indirect_avg6"]]
+    recent = done.sort_values("auction_date", ascending=False).head(20)
+    for r in recent.itertuples():
+        auc_rows.append({"key": f"{r.auction_date} {r.kind} {r.tenor} {r.cusip}", "date": r.auction_date, "security": f"{r.tenor} {r.kind}" + (" (reopening)" if r.reopening == "Yes" else ""),
+                         "size_bn": rnd(r.offering_amt / 1e9, 0), "high_yield": rnd(r.high_yield, 3), "btc": rnd(r.bid_to_cover_ratio, 2),
+                         "btc_vs_avg": None if pd.isna(r.btc_avg6) else rnd(r.bid_to_cover_ratio - r.btc_avg6, 2),
+                         "dealer_pct": rnd(r.dealer_pct, 1), "dealer_vs_avg": None if pd.isna(r.dealer_avg6) else rnd(r.dealer_pct - r.dealer_avg6, 1),
+                         "indirect_pct": rnd(r.indirect_pct, 1), "indirect_vs_avg": None if pd.isna(r.indirect_avg6) else rnd(r.indirect_pct - r.indirect_avg6, 1),
+                         "direct_pct": rnd(r.direct_pct, 1)})
+    pending = a[a.bid_to_cover_ratio.isna() & (pd.to_datetime(a.auction_date) <= TODAY)]
+    for r in pending.itertuples():
+        upc_rows.append({"key": f"{r.auction_date} {r.kind} {r.tenor}", "date": r.auction_date, "security": f"{r.tenor} {r.kind}",
+                         "size_bn": rnd(r.offering_amt / 1e9, 0), "status": "Results pending"})
+up = ROOT / "data" / "auctions_upcoming.parquet"
+if up.exists():
+    u = pd.read_parquet(up)
+    if not u.empty:
+        u = u[u.security_type.isin(["Note", "Bond", "TIPS"]) & (pd.to_datetime(u.auction_date) >= TODAY)]
+        for r in u.itertuples():
+            amt = pd.to_numeric(r.offering_amt, errors="coerce")
+            upc_rows.append({"key": f"{r.auction_date} {r.security_type} {r.security_term}", "date": r.auction_date,
+                             "security": f"{r.security_term} {r.security_type}" + (" (reopening)" if r.reopening == "Yes" else ""),
+                             "size_bn": None if pd.isna(amt) else rnd(amt / 1e9, 0), "status": "Announced" if not pd.isna(amt) else "Scheduled"})
+upc_rows = sorted({r["key"]: r for r in upc_rows}.values(), key=lambda r: r["date"])
+write("auctions", auc_rows)
+write("auctions_upcoming", upc_rows)
+
+# ------------------------------------------------------------------ 9. CFTC positioning (leveraged funds and asset managers)
+pos_rows, pos_hist = [], []
+cp = ROOT / "data" / "cftc.parquet"
+if cp.exists():
+    c = pd.read_parquet(cp)
+    c["lev_net"] = c.lev_money_positions_long - c.lev_money_positions_short
+    c["am_net"] = c.asset_mgr_positions_long - c.asset_mgr_positions_short
+    c["lev_net_pct_oi"] = c.lev_net / c.open_interest_all * 100
+    GROUP = {"UST 2y": "Rates", "UST 5y": "Rates", "UST 10y": "Rates", "UST Ultra 10y": "Rates", "UST Bond": "Rates",
+             "UST Ultra Bond": "Rates", "SOFR 3m": "Rates"}
+    order = list(dict.fromkeys(["UST 2y", "UST 5y", "UST 10y", "UST Ultra 10y", "UST Bond", "UST Ultra Bond", "SOFR 3m",
+                                "EUR", "JPY", "GBP", "CAD", "AUD", "CHF", "NZD"]))
+    for name in order:
+        g = c[c.contract == name].sort_values("date")
+        if g.empty:
+            continue
+        last = g.iloc[-1]
+        prev = g.iloc[-2] if len(g) > 1 else None
+        g3 = g[g.date > last.date - pd.Timedelta(days=365 * 3)]
+        z = (last.lev_net - g3.lev_net.mean()) / g3.lev_net.std() if len(g3) > 20 else None
+        pos_rows.append({"contract": name, "group": GROUP.get(name, "FX"), "date": last.date.strftime("%Y-%m-%d"),
+                         "lev_net_k": rnd(last.lev_net / 1000, 1), "lev_chg_1w_k": None if prev is None else rnd((last.lev_net - prev.lev_net) / 1000, 1),
+                         "lev_pct_oi": rnd(last.lev_net_pct_oi, 1), "lev_z_3y": rnd(z, 1),
+                         "lev_pctile_3y": rnd((g3.lev_net < last.lev_net).mean() * 100, 0),
+                         "am_net_k": rnd(last.am_net / 1000, 1), "am_chg_1w_k": None if prev is None else rnd((last.am_net - prev.am_net) / 1000, 1),
+                         "oi_k": rnd(last.open_interest_all / 1000, 0)})
+        for r in g[g.date >= TODAY - pd.Timedelta(days=730)].itertuples():
+            pos_hist.append({"date": r.date.strftime("%Y-%m-%d"), "contract": name, "lev_net_k": rnd(r.lev_net / 1000, 1), "am_net_k": rnd(r.am_net / 1000, 1)})
+write("positioning", pos_rows)
+write("positioning_hist", pos_hist)
+
+# ------------------------------------------------------------------ 10. brief facts (numbers the morning brief may use)
 grid = json.loads((OUT / "rates_grid.json").read_text())
 ov = json.loads((OUT / "overview.json").read_text())
 boe = json.loads((OUT / "boe_meetings.json").read_text())
@@ -311,6 +396,9 @@ facts = {
     "inflation_expectations": [{k: r[k] for k in ("key", "value", "chg_1w_bp", "chg_1m_bp")} for r in ie],
     "next_7_days": [r for r in cal if 0 <= r["days"] <= 7],
     "stale_series": [h["series"] for h in health if h["status"] == "Stale"],
+    "auctions_recent": auc_rows[:6],
+    "auctions_next": [r for r in upc_rows if r["status"] != "Results pending"][:6],
+    "positioning": [{k: r[k] for k in ("contract", "lev_net_k", "lev_chg_1w_k", "lev_z_3y", "am_net_k")} for r in pos_rows],
 }
 (ROOT / "data" / "outputs" / "brief_facts.json").write_text(json.dumps(facts, indent=1, default=str))
 print("brief_facts.json written")

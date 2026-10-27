@@ -24,3 +24,7 @@ datasets:
   - fx_rates_hist
   - infl_expect
   - infl_expect_hist
+  - auctions
+  - auctions_upcoming
+  - positioning
+  - positioning_hist

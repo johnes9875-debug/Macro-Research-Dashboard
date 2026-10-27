@@ -98,3 +98,73 @@ series:
   - {id: US_5Y_BEI,     economy: USD, name: 5y breakeven inflation,            source: fred, code: T5YIE,        freq: D, transform: level}
   - {id: US_5Y_REAL,    economy: USD, name: 5y TIPS real yield,                source: fred, code: DFII5,        freq: D, transform: level}
   # UK real and implied (RPI) inflation spot curves come from the BoE yield-curve files (UK_REAL_5Y/10Y, UK_INFL_5Y/10Y)
+
+  # ---------------- Added Oct 2026: rest of G10 ----------------
+  # CAD — Bank of Canada Valet API, Statistics Canada WDS
+  - {id: CA_POLICY,   economy: CAD, name: BoC target overnight rate,  source: boc, code: V39079,             freq: D, transform: level}
+  - {id: CA_CORRA,    economy: CAD, name: CORRA,                      source: boc, code: AVG.INTWO,          freq: D, transform: level}
+  - {id: CA_3M,       economy: CAD, name: GoC T-bill 3m,              source: boc, code: TB.CDN.90D.MID,     freq: D, transform: level}
+  - {id: CA_6M,       economy: CAD, name: GoC T-bill 6m,              source: boc, code: TB.CDN.180D.MID,    freq: D, transform: level}
+  - {id: CA_1Y,       economy: CAD, name: GoC T-bill 1y,              source: boc, code: TB.CDN.1Y.MID,      freq: D, transform: level}
+  - {id: CA_2Y,       economy: CAD, name: GoC 2y,                     source: boc, code: BD.CDN.2YR.DQ.YLD,  freq: D, transform: level, tenor: 2}
+  - {id: CA_5Y,       economy: CAD, name: GoC 5y,                     source: boc, code: BD.CDN.5YR.DQ.YLD,  freq: D, transform: level, tenor: 5}
+  - {id: CA_10Y,      economy: CAD, name: GoC 10y,                    source: boc, code: BD.CDN.10YR.DQ.YLD, freq: D, transform: level, tenor: 10}
+  - {id: CA_LONG,     economy: CAD, name: GoC long (30y),             source: boc, code: BD.CDN.LONG.DQ.YLD, freq: D, transform: level, tenor: 30}
+  - {id: CA_CPI,      economy: CAD, name: CPI y/y,                    source: boc, code: STATIC_TOTALCPICHANGE, freq: M, transform: level, tier: 1}
+  - {id: CA_CPI_TRIM, economy: CAD, name: CPI-trim y/y,               source: boc, code: CPI_TRIM,           freq: M, transform: level, tier: 1}
+  - {id: CA_CPI_MED,  economy: CAD, name: CPI-median y/y,             source: boc, code: CPI_MEDIAN,         freq: M, transform: level, tier: 1}
+  - {id: CA_UNEMP,    economy: CAD, name: Unemployment rate (LFS),    source: statcan, code: v2062815,       freq: M, transform: level, tier: 1}
+  # AUD — RBA statistical tables, ABS CPI (monthly)
+  - {id: AU_CASH,     economy: AUD, name: RBA cash rate target,       source: rba, code: f1/FIRMMCRTD,       freq: D, transform: level}
+  - {id: AU_BAB_3M,   economy: AUD, name: 3m bank bill (BAB),         source: rba, code: f1/FIRMMBAB90D,     freq: D, transform: level}
+  - {id: AU_BAB_6M,   economy: AUD, name: 6m bank bill (BAB),         source: rba, code: f1/FIRMMBAB180D,    freq: D, transform: level}
+  - {id: AU_2Y,       economy: AUD, name: ACGB 2y,                    source: rba, code: f2/FCMYGBAG2D,      freq: W, transform: level, tenor: 2}
+  - {id: AU_3Y,       economy: AUD, name: ACGB 3y,                    source: rba, code: f2/FCMYGBAG3D,      freq: W, transform: level, tenor: 3}
+  - {id: AU_5Y,       economy: AUD, name: ACGB 5y,                    source: rba, code: f2/FCMYGBAG5D,      freq: W, transform: level, tenor: 5}
+  - {id: AU_10Y,      economy: AUD, name: ACGB 10y,                   source: rba, code: f2/FCMYGBAG10D,     freq: W, transform: level, tenor: 10}
+  - {id: AU_CPI,      economy: AUD, name: Monthly CPI y/y,            source: abs, code: 3.10001.10.50.M,    freq: M, transform: level, tier: 1}
+  - {id: AU_CPI_TRIM, economy: AUD, name: Trimmed mean y/y (SA),      source: abs, code: 3.999902.20.50.M,   freq: M, transform: level, tier: 1}
+  - {id: AU_UNEMP,    economy: AUD, name: Unemployment rate,          source: rba, code: h5/GLFSURSA,        freq: M, transform: level, tier: 1}
+  # NZD — RBNZ blocks scripts (Cloudflare); OECD series via FRED, monthly/quarterly only
+  - {id: NZ_3M,       economy: NZD, name: NZ 3m bank bill (monthly avg),  source: fred, code: IR3TIB01NZM156N, freq: M, transform: level}
+  - {id: NZ_10Y,      economy: NZD, name: NZGB 10y (monthly avg),         source: fred, code: IRLTLT01NZM156N, freq: M, transform: level, tenor: 10}
+  - {id: NZ_UNEMP,    economy: NZD, name: Unemployment rate (quarterly),  source: fred, code: LRHUTTTTNZQ156S, freq: Q, transform: level, tier: 1}
+  # CHF — SNB data portal (Confederation yields are month-end)
+  - {id: CH_POLICY,   economy: CHF, name: SNB policy rate,            source: snb, code: snbgwdzid/LZ,       freq: D, transform: level}
+  - {id: CH_SARON,    economy: CHF, name: SARON,                      source: snb, code: snbgwdzid/SARON,    freq: D, transform: level}
+  - {id: CH_2Y,       economy: CHF, name: Confederation 2y (daily, published monthly),  source: snb, code: rendeiduebd/CHF|2J,   freq: DM, transform: level, tenor: 2}
+  - {id: CH_5Y,       economy: CHF, name: Confederation 5y (daily, published monthly),  source: snb, code: rendeiduebd/CHF|5J,   freq: DM, transform: level, tenor: 5}
+  - {id: CH_10Y,      economy: CHF, name: Confederation 10y (daily, published monthly), source: snb, code: rendeiduebd/CHF|10J, freq: DM, transform: level, tenor: 10}
+  - {id: CH_30Y,      economy: CHF, name: Confederation 30y (daily, published monthly), source: snb, code: rendeiduebd/CHF|30J,  freq: DM, transform: level, tenor: 30}
+  - {id: CH_CPI,      economy: CHF, name: CPI y/y,                    source: snb, code: plkopr/VVP,         freq: M, transform: level, tier: 1}
+  - {id: CH_UNEMP,    economy: CHF, name: Registered jobless rate (SA), source: snb, code: amarbma/S1,       freq: M, transform: level, tier: 1}
+  # SEK — Riksbank SWEA / SWESTR, Statistics Sweden PxWeb
+  - {id: SE_POLICY,   economy: SEK, name: Riksbank policy rate,       source: riksbank, code: SECBREPOEFF,   freq: D, transform: level}
+  - {id: SE_SWESTR,   economy: SEK, name: SWESTR,                     source: riksbank, code: SWESTR,        freq: D, transform: level}
+  - {id: SE_3M,       economy: SEK, name: Swedish T-bill 3m,          source: riksbank, code: SETB3MBENCH,   freq: D, transform: level}
+  - {id: SE_2Y,       economy: SEK, name: SGB 2y,                     source: riksbank, code: SEGVB2YC,      freq: D, transform: level, tenor: 2}
+  - {id: SE_5Y,       economy: SEK, name: SGB 5y,                     source: riksbank, code: SEGVB5YC,      freq: D, transform: level, tenor: 5}
+  - {id: SE_10Y,      economy: SEK, name: SGB 10y,                    source: riksbank, code: SEGVB10YC,     freq: D, transform: level, tenor: 10}
+  - {id: SE_CPIF,     economy: SEK, name: CPIF y/y,                   source: scb, code: "PR/PR0101/PR0101G/KPIF2020|ContentsCode=000007ZM", freq: M, transform: level, tier: 1}
+  - {id: SE_UNEMP,    economy: SEK, name: Unemployment rate (LFS, SA), source: scb, code: "AM/AM0401/AM0401A/AKURLBefM|Arbetskraftstillh=ALÖSP;TypData=SR_DATA;Kon=1+2;Alder=tot15-74", freq: M, transform: level, tier: 1}
+  # NOK — Norges Bank SDMX, Statistics Norway PxWeb
+  - {id: NO_POLICY,   economy: NOK, name: Norges Bank policy rate,    source: norgesbank, code: IR/B.KPRA.SD.R,          freq: D, transform: level}
+  - {id: NO_NOWA,     economy: NOK, name: NOWA,                       source: norgesbank, code: SHORT_RATES/B.NOWA.ON.R, freq: D, transform: level}
+  - {id: NO_3Y,       economy: NOK, name: NGB 3y,                     source: norgesbank, code: GOVT_GENERIC_RATES/B.3Y.GBON,  freq: D, transform: level, tenor: 3}
+  - {id: NO_5Y,       economy: NOK, name: NGB 5y,                     source: norgesbank, code: GOVT_GENERIC_RATES/B.5Y.GBON,  freq: D, transform: level, tenor: 5}
+  - {id: NO_10Y,      economy: NOK, name: NGB 10y,                    source: norgesbank, code: GOVT_GENERIC_RATES/B.10Y.GBON, freq: D, transform: level, tenor: 10}
+  - {id: NO_CPI,      economy: NOK, name: CPI y/y,                    source: ssb, code: "14700|VareTjenesteGrp=00;ContentsCode=Tolvmanedersendring", freq: M, transform: level, tier: 1}
+  - {id: NO_CPI_ATE,  economy: NOK, name: CPI-ATE y/y,                source: ssb, code: "14706|KPIavledetSerie=KPI-JAE;ContentsCode=Tolvmanedersendring", freq: M, transform: level, tier: 1}
+  - {id: NO_UNEMP,    economy: NOK, name: Unemployment rate (LFS, SA), source: ssb, code: "13760|Kjonn=0;Alder=15-74;Justering=S;ContentsCode=ArbledProsArbstyrk", freq: M, transform: level, tier: 1}
+  # Germany — Bundesbank daily Bund yields (from the term structure)
+  - {id: DE_2Y,       economy: EUR, name: Bund 2y,  source: bundesbank, code: BBSIS/D.I.ZAR.ZI.EUR.S1311.B.A604.R02XX.R.A.A._Z._Z.A, freq: D, transform: level, tenor: 2}
+  - {id: DE_5Y,       economy: EUR, name: Bund 5y,  source: bundesbank, code: BBSIS/D.I.ZAR.ZI.EUR.S1311.B.A604.R05XX.R.A.A._Z._Z.A, freq: D, transform: level, tenor: 5}
+  - {id: DE_10Y,      economy: EUR, name: Bund 10y, source: bundesbank, code: BBSIS/D.I.ZAR.ZI.EUR.S1311.B.A604.R10XX.R.A.A._Z._Z.A, freq: D, transform: level, tenor: 10}
+  - {id: DE_30Y,      economy: EUR, name: Bund 30y, source: bundesbank, code: BBSIS/D.I.ZAR.ZI.EUR.S1311.B.A604.R30XX.R.A.A._Z._Z.A, freq: D, transform: level, tenor: 30}
+  # G10 FX vs USD (FRED H.10)
+  - {id: FX_USDCAD,   economy: CAD, name: USDCAD, source: fred, code: DEXCAUS, freq: D, transform: level}
+  - {id: FX_AUDUSD,   economy: AUD, name: AUDUSD, source: fred, code: DEXUSAL, freq: D, transform: level}
+  - {id: FX_NZDUSD,   economy: NZD, name: NZDUSD, source: fred, code: DEXUSNZ, freq: D, transform: level}
+  - {id: FX_USDCHF,   economy: CHF, name: USDCHF, source: fred, code: DEXSZUS, freq: D, transform: level}
+  - {id: FX_USDSEK,   economy: SEK, name: USDSEK, source: fred, code: DEXSDUS, freq: D, transform: level}
+  - {id: FX_USDNOK,   economy: NOK, name: USDNOK, source: fred, code: DEXNOUS, freq: D, transform: level}

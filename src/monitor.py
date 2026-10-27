@@ -58,10 +58,18 @@ GRID = [
     ("USD", "10y breakeven", 10.2, "US_10Y_BEI"),
     ("EUR", "Overnight (€STR)", 0, "EA_ESTR"), ("EUR", "2y AAA", 2, "EA_2Y"), ("EUR", "5y AAA", 5, "EA_5Y"),
     ("EUR", "10y AAA", 10, "EA_10Y"), ("EUR", "30y AAA", 30, "EA_30Y"),
+    ("EUR", "2y Bund", 2.1, "DE_2Y"), ("EUR", "10y Bund", 10.1, "DE_10Y"), ("EUR", "30y Bund", 30.1, "DE_30Y"),
     ("GBP", "Overnight (SONIA)", 0, "UK_SONIA"), ("GBP", "1y OIS", 1, "UK_OIS_1Y"), ("GBP", "2y OIS", 1.9, "UK_OIS_2Y"),
     ("GBP", "2y gilt", 2, "UK_2Y"), ("GBP", "5y gilt", 5, "UK_5Y"), ("GBP", "10y gilt", 10, "UK_10Y"), ("GBP", "20y gilt", 20, "UK_20Y"),
     ("JPY", "Overnight (call)", 0, "JP_CALL"), ("JPY", "2y JGB", 2, "JP_2Y"), ("JPY", "5y JGB", 5, "JP_5Y"),
     ("JPY", "10y JGB", 10, "JP_10Y"), ("JPY", "30y JGB", 30, "JP_30Y"),
+    ("CAD", "Overnight (CORRA)", 0, "CA_CORRA"), ("CAD", "2y GoC", 2, "CA_2Y"), ("CAD", "5y GoC", 5, "CA_5Y"),
+    ("CAD", "10y GoC", 10, "CA_10Y"), ("CAD", "30y GoC", 30, "CA_LONG"),
+    ("AUD", "Cash rate", 0, "AU_CASH"), ("AUD", "3m bank bill", 0.25, "AU_BAB_3M"), ("AUD", "2y ACGB", 2, "AU_2Y"),
+    ("AUD", "5y ACGB", 5, "AU_5Y"), ("AUD", "10y ACGB", 10, "AU_10Y"),
+    ("CHF", "Overnight (SARON)", 0, "CH_SARON"), ("CHF", "2y Conf. (monthly)", 2, "CH_2Y"), ("CHF", "10y Conf. (monthly)", 10, "CH_10Y"),
+    ("SEK", "Overnight (SWESTR)", 0, "SE_SWESTR"), ("SEK", "2y SGB", 2, "SE_2Y"), ("SEK", "5y SGB", 5, "SE_5Y"), ("SEK", "10y SGB", 10, "SE_10Y"),
+    ("NOK", "Overnight (NOWA)", 0, "NO_NOWA"), ("NOK", "3y NGB", 3, "NO_3Y"), ("NOK", "5y NGB", 5, "NO_5Y"), ("NOK", "10y NGB", 10, "NO_10Y"),
 ]
 grid = []
 for eco, label, order, sid in GRID:
@@ -75,6 +83,11 @@ CURVES = {
     "EUR": [("3m", .25, "EA_3M"), ("1y", 1, "EA_1Y"), ("2y", 2, "EA_2Y"), ("5y", 5, "EA_5Y"), ("10y", 10, "EA_10Y"), ("30y", 30, "EA_30Y")],
     "GBP": [("2y", 2, "UK_2Y"), ("5y", 5, "UK_5Y"), ("10y", 10, "UK_10Y"), ("20y", 20, "UK_20Y")],
     "JPY": [("1y", 1, "JP_1Y"), ("2y", 2, "JP_2Y"), ("5y", 5, "JP_5Y"), ("10y", 10, "JP_10Y"), ("30y", 30, "JP_30Y")],
+    "CAD": [("3m", .25, "CA_3M"), ("6m", .5, "CA_6M"), ("1y", 1, "CA_1Y"), ("2y", 2, "CA_2Y"), ("5y", 5, "CA_5Y"), ("10y", 10, "CA_10Y"), ("30y", 30, "CA_LONG")],
+    "AUD": [("3m", .25, "AU_BAB_3M"), ("6m", .5, "AU_BAB_6M"), ("2y", 2, "AU_2Y"), ("3y", 3, "AU_3Y"), ("5y", 5, "AU_5Y"), ("10y", 10, "AU_10Y")],
+    "CHF": [("2y", 2, "CH_2Y"), ("5y", 5, "CH_5Y"), ("10y", 10, "CH_10Y"), ("30y", 30, "CH_30Y")],
+    "SEK": [("3m", .25, "SE_3M"), ("2y", 2, "SE_2Y"), ("5y", 5, "SE_5Y"), ("10y", 10, "SE_10Y")],
+    "NOK": [("3y", 3, "NO_3Y"), ("5y", 5, "NO_5Y"), ("10y", 10, "NO_10Y")],
 }
 curves = []
 for eco, pts in CURVES.items():
@@ -88,18 +101,25 @@ for eco, pts in CURVES.items():
 write("curves", curves)
 
 # ------------------------------------------------------------------ 3. curve RV
-RV = {
-    "USD": ("US_2Y", "US_5Y", "US_10Y", "US_30Y", "5s30s"),
-    "EUR": ("EA_2Y", "EA_5Y", "EA_10Y", "EA_30Y", "5s30s"),
-    "GBP": ("UK_2Y", "UK_5Y", "UK_10Y", "UK_20Y", "5s20s"),
-    "JPY": ("JP_2Y", "JP_5Y", "JP_10Y", "JP_30Y", "5s30s"),
+RV = {  # short, belly, 10y, long (None = no long point), labels
+    "USD": ("US_2Y", "US_5Y", "US_10Y", "US_30Y", "2s10s", "5s30s", "2s5s10s fly"),
+    "EUR": ("DE_2Y", "DE_5Y", "DE_10Y", "DE_30Y", "Bund 2s10s", "Bund 5s30s", "Bund 2s5s10s fly"),
+    "GBP": ("UK_2Y", "UK_5Y", "UK_10Y", "UK_20Y", "2s10s", "5s20s", "2s5s10s fly"),
+    "JPY": ("JP_2Y", "JP_5Y", "JP_10Y", "JP_30Y", "2s10s", "5s30s", "2s5s10s fly"),
+    "CAD": ("CA_2Y", "CA_5Y", "CA_10Y", "CA_LONG", "2s10s", "5s30s", "2s5s10s fly"),
+    "AUD": ("AU_2Y", "AU_5Y", "AU_10Y", None, "2s10s", None, "2s5s10s fly"),
+    "SEK": ("SE_2Y", "SE_5Y", "SE_10Y", None, "2s10s", None, "2s5s10s fly"),
+    "NOK": ("NO_3Y", "NO_5Y", "NO_10Y", None, "3s10s", None, "3s5s10s fly"),
 }
 rv = []
-for eco, (a2, a5, a10, along, long_label) in RV.items():
-    df = pd.concat([s(a2), s(a5), s(a10), s(along)], axis=1, sort=True).dropna()
-    df.columns = ["y2", "y5", "y10", "yl"]
-    measures = {"2s10s": (df.y10 - df.y2) * 100, long_label: (df.yl - df.y5) * 100,
-                "2s5s10s fly": (2 * df.y5 - df.y2 - df.y10) * 100}
+for eco, (a2, a5, a10, along, l_slope, l_long, l_fly) in RV.items():
+    cols = [s(a2), s(a5), s(a10)] + ([s(along)] if along else [])
+    df = pd.concat(cols, axis=1, sort=True).dropna()
+    df.columns = ["y2", "y5", "y10"] + (["yl"] if along else [])
+    measures = {l_slope: (df.y10 - df.y2) * 100}
+    if along:
+        measures[l_long] = (df.yl - df.y5) * 100
+    measures[l_fly] = (2 * df.y5 - df.y2 - df.y10) * 100
     for name, x in measures.items():
         d = x.index[-1]
         yr = x[x.index > d - pd.Timedelta(days=365)]
@@ -153,7 +173,7 @@ for r in now_strip:
 write("boe_meetings", boe)
 
 # ------------------------------------------------------------------ 5. data health
-MAX_AGE = {"D": 5, "W": 12, "M": 75, "Q": 200, "A": 400}
+MAX_AGE = {"D": 5, "DM": 45, "W": 12, "M": 75, "Q": 200, "A": 400}  # DM = daily data published monthly (SNB)
 today = pd.Timestamp.today().normalize()
 health = []
 for sid, g in D.groupby("series_id"):

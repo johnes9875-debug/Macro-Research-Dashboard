@@ -1,9 +1,11 @@
 """Generate the dashboard page (index.html) — v3, institutional monitor styling."""
 from pathlib import Path
 
-ECON = [("USD", "Fed"), ("EUR", "ECB"), ("GBP", "BoE"), ("JPY", "BoJ")]
+ECON = [("USD", "Fed"), ("EUR", "ECB"), ("GBP", "BoE"), ("JPY", "BoJ"), ("CAD", "BoC"), ("AUD", "RBA"), ("CHF", "SNB"), ("SEK", "Riksbank"), ("NOK", "Norges Bank")]
+FX_PAIRS = ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "USDSEK", "USDNOK"]
+INFL_ECO = ["USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "SEK", "NOK"]
 STRIP = [("USD 2y", "UST 2y"), ("USD 10y", "UST 10y"), ("USD 30y", "UST 30y"), ("USD 10y breakeven", "US 10y BEI"),
-         ("EUR 10y AAA", "EUR 10y AAA"), ("GBP 2y OIS", "SONIA 2y OIS"), ("GBP 10y gilt", "Gilt 10y"), ("JPY 10y JGB", "JGB 10y")]
+         ("EUR 10y Bund", "Bund 10y"), ("GBP 2y OIS", "SONIA 2y OIS"), ("GBP 10y gilt", "Gilt 10y"), ("JPY 10y JGB", "JGB 10y")]
 
 
 def small(eco, kind, src, note=""):
@@ -24,7 +26,7 @@ def tile(key, label):
     </div>"""
 
 
-TABS = [("overview", "Overview"), ("calendar", "Calendar"), ("pricing", "Policy pricing"), ("curves", "Curves & RV"), ("liquidity", "Liquidity"), ("cross", "Cross-asset"), ("macro", "Macro"), ("health", "Data health")]
+TABS = [("overview", "Overview"), ("calendar", "Calendar"), ("pricing", "Policy pricing"), ("curves", "Curves & RV"), ("supply", "Supply & positioning"), ("liquidity", "Liquidity"), ("cross", "Cross-asset"), ("macro", "Macro"), ("health", "Data health")]
 tabbar = "".join(f'<button class="rm-tab" role="tab" data-tab="{t}" id="tab-{t}">{n}</button>' for t, n in TABS)
 
 CSS = """
@@ -158,7 +160,7 @@ HTML = f"""<style>{CSS}</style>
   <!-- OVERVIEW -->
   <div class="rm-pane" id="pane-overview" role="tabpanel">
     <section id="board">
-      <div class="rm-sec-h"><h2>Central bank board</h2><p>Priced = market-implied change vs today's policy rate about 12 months out. GBP from OIS; USD, EUR, JPY are government-curve proxies.</p></div>
+      <div class="rm-sec-h"><h2>Central bank board</h2><p>Priced = market-implied change vs today's policy rate at the horizon shown (nearest to 12 months). GBP from OIS; others are bill or government-curve proxies (see Policy pricing). CHF yields are published monthly. NZD: the RBNZ blocks automated access, so only monthly data and the meeting date are shown.</p></div>
       <div class="rm-tw">
         <table class="rm-table" id="board-table" data-source="overview" data-row-key="economy">
           <thead><tr><th class="t" data-field="economy">Ccy</th><th class="t" data-field="cb">Bank</th><th data-field="policy">Policy %</th><th class="t" data-field="next_meeting_sgt">Next decision (SGT)</th><th data-field="days_to_meeting">Days</th>
@@ -279,6 +281,44 @@ HTML = f"""<style>{CSS}</style>
     </section>
   </div>
 
+  <!-- SUPPLY & POSITIONING -->
+  <div class="rm-pane" id="pane-supply" role="tabpanel" hidden>
+    <section id="auctions">
+      <div class="rm-sec-h"><h2>US Treasury coupon auctions</h2><p>Latest 20 note and bond auctions (US Treasury Fiscal Data). Bid-to-cover and bidder shares compared with the average of the previous six auctions of the same tenor: higher indirect and lower dealer share = stronger demand. The auction tail needs when-issued yields, which are not public.</p></div>
+      <div class="rm-tw rm-scroll">
+        <table class="rm-table" id="auc-table" data-source="auctions" data-row-key="key">
+          <thead><tr><th class="t" data-field="date">Date</th><th class="t" data-field="security">Security</th><th data-field="size_bn">Size $bn</th><th data-field="high_yield">High yield %</th><th data-field="btc">Bid/cover</th><th data-field="btc_vs_avg">vs avg</th><th data-field="indirect_pct">Indirect %</th><th data-field="indirect_vs_avg">vs avg</th><th data-field="direct_pct">Direct %</th><th data-field="dealer_pct">Dealer %</th><th data-field="dealer_vs_avg">vs avg</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="rm-sec-h" style="margin-top:12px"><h2>Coming up</h2><p>Announced and scheduled coupon auctions, plus recent ones whose results are not yet published.</p></div>
+      <div class="rm-tw">
+        <table class="rm-table" id="upc-table" data-source="auctions_upcoming" data-row-key="key">
+          <thead><tr><th class="t" data-field="date">Date</th><th class="t" data-field="security">Security</th><th data-field="size_bn">Size $bn</th><th class="t" data-field="status">Status</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+    <section id="positioning">
+      <div class="rm-sec-h"><h2>Futures positioning (CFTC, weekly)</h2><p>Traders in Financial Futures report, positions as of Tuesday, published Friday. Net contracts in thousands. Leveraged funds' Treasury shorts largely reflect the cash-futures basis trade, so read changes and extremes rather than the level. z and percentile vs the past 3 years.</p></div>
+      <div class="rm-grid-2">
+        <div class="rm-tw">
+          <table class="rm-table" id="pos-table" data-source="positioning" data-row-key="contract">
+            <thead><tr><th class="t" data-field="group"></th><th class="t" data-field="contract">Contract</th><th data-field="lev_net_k">Lev funds net k</th><th data-field="lev_chg_1w_k">Δ1w</th><th data-field="lev_pct_oi">% OI</th><th data-field="lev_z_3y">z 3y</th><th data-field="am_net_k">Asset mgr net k</th><th data-field="am_chg_1w_k">Δ1w</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <p class="rm-note" style="padding:0 10px 8px">As of <span data-source="positioning" data-field="date" data-row="0"></span>.</p>
+        </div>
+        <div class="rm-card">
+          <div class="rm-card-h"><span>Leveraged funds net, Treasury futures, k contracts</span></div><div class="rm-legend" id="pos-legend"></div>
+          <div class="rm-chart" id="pos-chart" data-source="positioning_hist" style="min-height:220px"></div>
+          <div class="rm-card-h" style="margin-top:10px"><span>Leveraged funds net, currency futures, k contracts</span></div><div class="rm-legend" id="posfx-legend"></div>
+          <div class="rm-chart" id="posfx-chart" data-source="positioning_hist" style="min-height:220px"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
   <!-- LIQUIDITY -->
   <div class="rm-pane" id="pane-liquidity" role="tabpanel" hidden>
     <section id="liq">
@@ -319,9 +359,7 @@ HTML = f"""<style>{CSS}</style>
       </div>
       <div class="rm-legend" id="fxr-legend" style="margin-top:8px"></div>
       <div class="rm-grid">
-        <div class="rm-card"><div class="rm-card-h"><span>EURUSD</span></div><div class="rm-chart" id="fxr-EURUSD" data-source="fx_rates_hist"></div></div>
-        <div class="rm-card"><div class="rm-card-h"><span>GBPUSD</span></div><div class="rm-chart" id="fxr-GBPUSD" data-source="fx_rates_hist"></div></div>
-        <div class="rm-card"><div class="rm-card-h"><span>USDJPY</span></div><div class="rm-chart" id="fxr-USDJPY" data-source="fx_rates_hist"></div></div>
+{''.join(f'<div class="rm-card"><div class="rm-card-h"><span>{p}</span></div><div class="rm-chart" id="fxr-{p}" data-source="fx_rates_hist"></div></div>' for p in FX_PAIRS)}
       </div>
     </section>
   </div>
@@ -338,15 +376,18 @@ HTML = f"""<style>{CSS}</style>
           </table>
         </div>
         <div class="rm-card">
-          <div class="rm-card-h"><span>Headline and core inflation, y/y %</span></div>
-          <div class="rm-legend" id="infl-legend"></div>
-          <div class="rm-chart" id="infl-USD" data-source="macro_hist" style="min-height:150px"></div>
-          <div class="rm-chart" id="infl-EUR" data-source="macro_hist" style="min-height:150px"></div>
-          <div class="rm-chart" id="infl-GBP" data-source="macro_hist" style="min-height:150px"></div>
-          <div class="rm-chart" id="infl-JPY" data-source="macro_hist" style="min-height:150px"></div>
-          <div class="rm-card-h" style="margin-top:10px"><span>Unemployment rate, %</span></div>
+          <div class="rm-card-h"><span>Unemployment rate, %: USD, EUR, GBP, JPY</span></div>
           <div class="rm-chart" id="unemp-chart" data-source="macro_hist" style="min-height:180px"></div>
+          <div class="rm-card-h" style="margin-top:10px"><span>Unemployment rate, %: CAD, AUD, NZD, CHF, SEK, NOK</span></div>
+          <div class="rm-chart" id="unemp-chart2" data-source="macro_hist" style="min-height:180px"></div>
+          <p class="rm-note">Definitions differ (CHF is the registered jobless rate; NZD quarterly), so compare trends rather than levels.</p>
         </div>
+      </div>
+    </section>
+    <section id="infl">
+      <div class="rm-sec-h"><h2>Headline and core inflation, y/y %</h2><p>Core = the measure each central bank watches: US core CPI, euro core HICP, UK core CPI, Japan ex fresh food, Canada CPI-trim, Australia trimmed mean, Norway CPI-ATE. Switzerland and Sweden show headline (CPI, CPIF) only. Shared scale.</p></div>
+      <div class="rm-legend" id="infl-legend"></div>
+      <div class="rm-grid">{''.join(f'<div class="rm-card"><div class="rm-card-h"><span>{e}</span></div><div class="rm-chart" id="infl-{e}" data-source="macro_hist" style="min-height:150px"></div></div>' for e in INFL_ECO)}
       </div>
     </section>
     <section id="ie">
@@ -382,7 +423,7 @@ HTML = f"""<style>{CSS}</style>
   </div>
 
   <footer class="rm-foot">
-    <p>Sources: FRED, ECB Data Portal, Eurostat (HICP, ECOICOP 2), ONS, Bank of England (IADB, yield curves), Bank of Japan, Japan MoF; Federal Reserve Board (dots, Kim-Wright term premium, H.4.1), ICE BofA credit indices and CBOE VIX via FRED; Eurostat and ONS release calendars. Refreshed twice daily (06:00 and 23:00 SGT).</p>
+    <p>Sources: FRED, ECB Data Portal, Eurostat (HICP, ECOICOP 2), ONS, Bank of England (IADB, yield curves), Bank of Japan, Japan MoF, e-Stat; Bank of Canada, Statistics Canada, RBA, ABS, SNB, Riksbank, Statistics Sweden, Norges Bank, Statistics Norway, Bundesbank; US Treasury Fiscal Data; CFTC; Federal Reserve Board (dots, Kim-Wright term premium, H.4.1), ICE BofA credit indices and CBOE VIX via FRED; Eurostat and ONS release calendars. Refreshed twice daily (06:00 and 23:00 SGT).</p>
     <p>USD, EUR and JPY policy paths are government-curve proxies carrying term premium and supply effects: read direction and shape, not exact bp. US y/y rates are computed on the calendar, so the missing Oct 2025 CPI does not distort them.</p>
   </footer>
 </div>
@@ -399,7 +440,7 @@ SCRIPT = r"""
   });
 
 (() => {
-  const ECO = ['USD', 'EUR', 'GBP', 'JPY'];
+  const ECO = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'SEK', 'NOK'];
   const C = dash.colors;
   const MINUS = '−';
   const sgn = (v, d = 0) => (v == null || isNaN(v)) ? '—' : (v > 0 ? '+' : v < 0 ? MINUS : '') + Math.abs(v).toFixed(d);
@@ -566,7 +607,7 @@ SCRIPT = r"""
       td(tr, r.next_meeting_sgt || (r.next_meeting ? fmtShort(parse(r.next_meeting)) : '—'), 't');
       const dc = td(tr, r.days_to_meeting == null ? '—' : String(N(r.days_to_meeting))); if (N(r.days_to_meeting) <= 7) dc.classList.add('rm-warn', 'rm-strong');
       td(tr, sgn(N(r.priced_12m_bp)), 'rm-strong'); td(tr, sgn(N(r.priced_chg_1w_bp)), 'rm-flat');
-      td(tr, pct(N(r.y2))); td(tr, sgn(N(r.y2_chg_1d)), dirCls(N(r.y2_chg_1d)));
+      td(tr, pct(N(r.y2)) + (r.y2_label && r.y2_label !== '2y' ? ' (' + r.y2_label + ')' : '')); td(tr, sgn(N(r.y2_chg_1d)), dirCls(N(r.y2_chg_1d)));
       td(tr, pct(N(r.y10))); td(tr, sgn(N(r.y10_chg_1d)), dirCls(N(r.y10_chg_1d)));
       td(tr, sgn(N(r.s2s10s))); td(tr, sgn(N(r.s2s10s_chg_1w)), 'rm-flat');
       tb.appendChild(tr);
@@ -737,17 +778,20 @@ SCRIPT = r"""
       });
     }
     legend('infl-legend', [['Headline', C[0]], ['Core', C[2]]]);
-    if (bad(mh.status)) return ['infl-USD', 'infl-EUR', 'infl-GBP', 'infl-JPY', 'unemp-chart'].forEach(id => failBox(document.getElementById(id)));
+    const INFL = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'SEK', 'NOK'];
+    if (bad(mh.status)) return INFL.map(e => 'infl-' + e).concat(['unemp-chart', 'unemp-chart2']).forEach(id => failBox(document.getElementById(id)));
     if (mh.status !== 'ok' || !visible(document.getElementById('infl-USD'))) return;
     const pts = (e, mtr) => mh.data.filter(r => r.economy === e && r.metric === mtr).map(r => ({ x: parse(r.date), y: N(r.value) }));
     const infl = mh.data.filter(r => r.metric !== 'Unemployment rate').map(r => N(r.value));
     const yDomain = [Math.min(0, d3.min(infl)), d3.max(infl)];
-    ['USD', 'EUR', 'GBP', 'JPY'].forEach(e => lineChart(document.getElementById('infl-' + e), [
+    INFL.forEach(e => lineChart(document.getElementById('infl-' + e), [
       { name: e + ' headline', short: e, color: C[0], points: pts(e, 'Headline inflation') },
       { name: e + ' core', short: 'core', color: C[2], points: pts(e, 'Core inflation') },
-    ], { height: 150, yDomain, endLabels: true, yFmt: v => v.toFixed(1) + '%', xFmt: d3.utcFormat('%Y'), tipX: d3.utcFormat('%b %Y'), label: e + ' inflation' }));
-    lineChart(document.getElementById('unemp-chart'), ECO.map((e, i) => ({ name: e, short: e, color: C[i], points: pts(e, 'Unemployment rate') })),
-      { height: 180, endLabels: true, yFmt: v => v.toFixed(1) + '%', xFmt: d3.utcFormat('%Y'), tipX: d3.utcFormat('%b %Y'), label: 'Unemployment rates' });
+    ].filter(sr => sr.points.length), { height: 150, yDomain, endLabels: true, yFmt: v => v.toFixed(1) + '%', xFmt: d3.utcFormat('%Y'), tipX: d3.utcFormat('%b %Y'), label: e + ' inflation' }));
+    lineChart(document.getElementById('unemp-chart'), ['USD', 'EUR', 'GBP', 'JPY'].map((e, i) => ({ name: e, short: e, color: C[i], points: pts(e, 'Unemployment rate') })),
+      { height: 180, endLabels: true, yFmt: v => v.toFixed(1) + '%', xFmt: d3.utcFormat('%Y'), tipX: d3.utcFormat('%b %Y'), label: 'Unemployment rates, majors' });
+    lineChart(document.getElementById('unemp-chart2'), ['CAD', 'AUD', 'NZD', 'CHF', 'SEK', 'NOK'].map((e, i) => ({ name: e, short: e, color: C[i], points: pts(e, 'Unemployment rate') })),
+      { height: 180, endLabels: true, yFmt: v => v.toFixed(1) + '%', xFmt: d3.utcFormat('%Y'), tipX: d3.utcFormat('%b %Y'), label: 'Unemployment rates, smaller G10' });
   });
 
   // ---------- data health
@@ -891,7 +935,7 @@ SCRIPT = r"""
       const tb = document.querySelector('#xa-table tbody'); tb.innerHTML = ''; let last = null;
       xa.data.forEach(r => {
         const tr = document.createElement('tr'); tr.dataset.key = r.key; if (last && r.group !== last) tr.className = 'rm-grp';
-        const dec = r.key === 'eurusd' || r.key === 'gbpusd' ? 4 : r.key === 'nfci' ? 2 : r.key === 'usdjpy' ? 2 : r.unit === 'bp' ? 0 : 1;
+        const dec = ['eurusd', 'gbpusd', 'audusd', 'usdcad', 'usdchf', 'nzdusd'].includes(r.key) ? 4 : ['usdsek', 'usdnok'].includes(r.key) ? 3 : r.key === 'nfci' ? 2 : r.key === 'usdjpy' ? 2 : r.unit === 'bp' ? 0 : 1;
         const cd = r.chg_unit === '%' ? 2 : dec;
         td(tr, r.group !== last ? r.group : '', 't rm-eco'); td(tr, r.measure, 't'); td(tr, num(N(r.value), dec), 'rm-strong');
         const sc = td(tr, ''); const sp = document.createElement('span'); sp.className = 'rm-cellspark'; sc.appendChild(sp);
@@ -906,7 +950,7 @@ SCRIPT = r"""
     if (fr.status === 'ok') {
       const tb = document.querySelector('#fxr-table tbody'); tb.innerHTML = '';
       fr.data.forEach(r => {
-        const tr = document.createElement('tr'); tr.dataset.key = r.pair; const dp = r.pair === 'USDJPY' ? 2 : 4;
+        const tr = document.createElement('tr'); tr.dataset.key = r.pair; const dp = r.pair === 'USDJPY' ? 2 : (r.pair === 'USDSEK' || r.pair === 'USDNOK') ? 3 : 4;
         td(tr, r.pair, 't rm-eco'); td(tr, N(r.spot).toFixed(dp), 'rm-strong'); td(tr, N(r.fair_value).toFixed(dp));
         const mz = N(r.misalignment_z);
         td(tr, sgn(N(r.misalignment_pct), 1) + '%', Math.abs(mz) >= 1.5 ? 'rm-warn rm-strong' : ''); td(tr, num(mz, 1), Math.abs(mz) >= 1.5 ? 'rm-warn rm-strong' : '');
@@ -916,11 +960,11 @@ SCRIPT = r"""
       });
     }
     legend('fxr-legend', [['Spot', C[0]], ['Rate-implied fair value', 'var(--cds-chart-muted)', true]]);
-    ['EURUSD', 'GBPUSD', 'USDJPY'].forEach(p => {
+    ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDSEK', 'USDNOK'].forEach(p => {
       const el = document.getElementById('fxr-' + p);
       if (bad(fh.status)) return failBox(el);
       if (fh.status !== 'ok' || !visible(el)) return;
-      const rows = fh.data.filter(r => r.pair === p), dp = p === 'USDJPY' ? 1 : 3;
+      const rows = fh.data.filter(r => r.pair === p), dp = p === 'USDJPY' ? 1 : (p === 'USDSEK' || p === 'USDNOK') ? 2 : 3;
       lineChart(el, [{ name: 'Fair value', color: 'var(--cds-chart-muted)', dash: '4 3', points: rows.map(r => ({ x: parse(r.date), y: N(r.fair_value) })) },
                      { name: 'Spot', color: C[0], points: rows.map(r => ({ x: parse(r.date), y: N(r.spot) })) }],
         { height: 180, yFmt: v => v.toFixed(dp), xFmt: d3.utcFormat("%b '%y"), tipX: v => 'Week to ' + fmtDate(v), label: p + ' vs rate-implied' });
@@ -950,6 +994,53 @@ SCRIPT = r"""
       { height: 180, endLabels: true, yFmt: v => v.toFixed(1) + '%', xFmt: d3.utcFormat('%Y'), tipX: v => 'Week to ' + fmtDate(v), label: '5y5y inflation' });
     lineChart(e2, [{ name: 'US 10y real', short: 'US', color: C[0], points: pts('US 10y real') }, { name: 'UK 10y real', short: 'UK', color: C[2], points: pts('UK 10y real') }],
       { height: 180, endLabels: true, zero: true, yFmt: v => v.toFixed(1) + '%', xFmt: d3.utcFormat('%Y'), tipX: v => 'Week to ' + fmtDate(v), label: '10y real yields' });
+  });
+
+  // ---------- supply: auctions
+  renders.push(() => {
+    const au = dash.data('auctions'), up = dash.data('auctions_upcoming');
+    const vs = (v, d, invert) => { const x = N(v); if (x == null) return ['—', 'rm-flat']; const good = invert ? x < 0 : x > 0; return [sgn(x, d), Math.abs(x) < (d ? 0.1 : 2) ? 'rm-flat' : good ? 'rm-dn' : 'rm-up']; };
+    if (au.status === 'ok') {
+      const tb = document.querySelector('#auc-table tbody'); tb.innerHTML = '';
+      au.data.forEach(r => {
+        const tr = document.createElement('tr'); tr.dataset.key = r.key;
+        td(tr, d3.utcFormat('%-d %b')(parse(r.date)), 't'); td(tr, r.security, 't'); td(tr, num(N(r.size_bn), 0));
+        td(tr, N(r.high_yield) == null ? '—' : N(r.high_yield).toFixed(3)); td(tr, N(r.btc).toFixed(2), 'rm-strong');
+        let [t, c] = vs(r.btc_vs_avg, 2); td(tr, t, c);
+        td(tr, num(N(r.indirect_pct), 1)); [t, c] = vs(r.indirect_vs_avg, 1); td(tr, t, c);
+        td(tr, num(N(r.direct_pct), 1)); td(tr, num(N(r.dealer_pct), 1)); [t, c] = vs(r.dealer_vs_avg, 1, true); td(tr, t, c);
+        tb.appendChild(tr);
+      });
+    }
+    if (up.status === 'ok') {
+      const tb = document.querySelector('#upc-table tbody'); tb.innerHTML = '';
+      up.data.forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.key; td(tr, d3.utcFormat('%a %-d %b')(parse(r.date)), 't'); td(tr, r.security, 't'); td(tr, N(r.size_bn) == null ? '—' : num(N(r.size_bn), 0)); td(tr, r.status, 't rm-flat'); tb.appendChild(tr); });
+    }
+  });
+
+  // ---------- positioning
+  renders.push(() => {
+    const ps = dash.data('positioning'), ph = dash.data('positioning_hist');
+    if (ps.status === 'ok' && ps.data.length) {
+      const tb = document.querySelector('#pos-table tbody'); tb.innerHTML = ''; let last = null;
+      ps.data.forEach(r => {
+        const tr = document.createElement('tr'); tr.dataset.key = r.contract; if (last && r.group !== last) tr.className = 'rm-grp';
+        td(tr, r.group !== last ? r.group : '', 't rm-eco'); td(tr, r.contract, 't');
+        td(tr, sgn(N(r.lev_net_k), 0), 'rm-strong'); td(tr, sgn(N(r.lev_chg_1w_k), 0), 'rm-flat'); td(tr, sgn(N(r.lev_pct_oi), 1), 'rm-flat');
+        const z = N(r.lev_z_3y); td(tr, num(z, 1), z != null && Math.abs(z) >= 1.5 ? 'rm-warn rm-strong' : '');
+        td(tr, sgn(N(r.am_net_k), 0)); td(tr, sgn(N(r.am_chg_1w_k), 0), 'rm-flat');
+        last = r.group; tb.appendChild(tr);
+      });
+      const r0 = ps.data[0]; document.querySelectorAll('[data-source="positioning"][data-row="0"]').forEach(e => e.textContent = fmtDate(parse(r0.date)));
+    }
+    const e1 = document.getElementById('pos-chart'), e2 = document.getElementById('posfx-chart');
+    if (bad(ph.status)) { failBox(e1); failBox(e2); return; }
+    if (ph.status !== 'ok' || !visible(e1)) return;
+    const pts = k => ph.data.filter(r => r.contract === k).map(r => ({ x: parse(r.date), y: N(r.lev_net_k) }));
+    const RT = ['UST 2y', 'UST 5y', 'UST 10y', 'UST Bond', 'SOFR 3m'], FXC = ['EUR', 'JPY', 'GBP', 'CAD', 'AUD', 'CHF'];
+    legend('pos-legend', RT.map((k, i) => [k, C[i]])); legend('posfx-legend', FXC.map((k, i) => [k, C[i]]));
+    lineChart(e1, RT.map((k, i) => ({ name: k, color: C[i], width: 1.5, points: pts(k) })), { height: 220, zero: true, yFmt: v => d3.format(',.0f')(v), xFmt: d3.utcFormat("%b '%y"), tipX: v => 'Week to ' + fmtDate(v), label: 'Leveraged funds net, Treasury futures' });
+    lineChart(e2, FXC.map((k, i) => ({ name: k, color: C[i], width: 1.5, points: pts(k) })), { height: 220, zero: true, yFmt: v => d3.format(',.0f')(v), xFmt: d3.utcFormat("%b '%y"), tipX: v => 'Week to ' + fmtDate(v), label: 'Leveraged funds net, currency futures' });
   });
 
   dash.onData(runAll);

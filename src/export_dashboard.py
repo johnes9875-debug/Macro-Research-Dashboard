@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = json.loads((ROOT / "data" / "outputs" / "dashboard.json").read_text())
 OUT = ROOT / "data" / "outputs" / "dash"
 OUT.mkdir(parents=True, exist_ok=True)
-ORDER = ["USD", "EUR", "GBP", "JPY"]
+ORDER = ["USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "SEK", "NOK"]
 
 
 def rnd(x, n):
@@ -32,7 +32,7 @@ for c in ORDER:
     e = E[c]
     nm = e["next_meeting"] or {}
     overview.append({
-        "economy": c, "cb": e["cb"], "policy_label": e["policy"]["label"], "policy": rnd(e["policy"]["value"], 3),
+        "economy": c, "cb": e["cb"], "y2_label": e.get("y2_label", "2y"), "policy_label": e["policy"]["label"], "policy": rnd(e["policy"]["value"], 3),
         "policy_date": e["policy"]["date"],
         "y2": rnd(e["y2"]["value"], 2), "y2_chg_1d": rnd(e["y2"]["chg_1d"], 0), "y2_chg_1w": rnd(e["y2"]["chg_1w"], 0),
         "y2_chg_1m": rnd(e["y2"]["chg_1m"], 0), "y2_date": e["y2"]["date"],
@@ -83,19 +83,19 @@ write("spreads_hist", sph)
 # 6. macro latest (inflation, labour, growth)
 M = SRC["macro"]
 ml = []
-for c in ORDER:
-    inf = M["inflation"][c]
+for c in ORDER + ["NZD"]:
+    inf = M["inflation"].get(c, {"extra": []})
     for nm_key, blk in (("headline_name", "headline"), ("core_name", "core")):
-        if inf[blk]:
+        if inf.get(blk):
             ml.append({"key": f"{c} {inf[nm_key]}", "economy": c, "group": "Inflation", "metric": inf[nm_key],
                        "value": inf[blk]["value"], "prior": inf[blk]["prior"], "period": inf[blk]["period"]})
     for x in inf["extra"]:
         ml.append({"key": f"{c} {x['name']}", "economy": c, "group": "Inflation", "metric": x["name"],
                    "value": x["value"], "prior": x["prior"], "period": x["period"]})
-    for x in M["labour"][c]:
+    for x in M["labour"].get(c, []):
         ml.append({"key": f"{c} {x['name']}", "economy": c, "group": "Labour", "metric": x["name"],
                    "value": x["value"], "prior": x["prior"], "period": x["period"]})
-    g = M["growth"][c]
+    g = M["growth"].get(c)
     if g:
         ml.append({"key": f"{c} {g['name']}", "economy": c, "group": "Growth", "metric": g["name"],
                    "value": g["value"], "prior": g["prior"], "period": g["period"]})

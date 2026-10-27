@@ -37,16 +37,31 @@ def _load_env() -> None:
                 os.environ.setdefault(k.strip(), v.strip())
 
 
-def _get(url: str, **kw) -> requests.Response:
+def _get(url: str, headers: dict | None = None, **kw) -> requests.Response:
     """GET with 3 retries and backoff."""
     last = None
     for attempt in range(3):
         try:
-            r = requests.get(url, headers=UA, timeout=90, **kw)
+            r = requests.get(url, headers={**UA, **(headers or {})}, timeout=90, **kw)
             if r.status_code == 200:
                 return r
             last = RuntimeError(f"HTTP {r.status_code} for {url}: {r.text[:150]}")
         except requests.RequestException as e:  # network error
+            last = e
+        time.sleep(2 * (attempt + 1))
+    raise last  # type: ignore[misc]
+
+
+def _post(url: str, **kw) -> requests.Response:
+    """POST with 3 retries and backoff (PxWeb and StatCan APIs)."""
+    last = None
+    for attempt in range(3):
+        try:
+            r = requests.post(url, headers=UA, timeout=90, **kw)
+            if r.status_code == 200:
+                return r
+            last = RuntimeError(f"HTTP {r.status_code} for {url}: {r.text[:150]}")
+        except requests.RequestException as e:
             last = e
         time.sleep(2 * (attempt + 1))
     raise last  # type: ignore[misc]
@@ -356,6 +371,9 @@ def main() -> int:
     reg = yaml.safe_load((ROOT / "config" / "series.yaml").read_text())["series"]
     frames, errors = [], []
     iadb, mof_items, estat_items = [], [], []
+    import collect_g10 as G
+    g10_groups: dict[str, list] = {}
+    G10_SOURCES = {"boc", "statcan", "rba", "abs", "snb", "riksbank", "scb", "norgesbank", "ssb", "bundesbank"}
     for s in reg:
         sid, src, code = s["id"], s["source"], s["code"]
         try:
@@ -375,12 +393,33 @@ def main() -> int:
                 mof_items.append((sid, code))
             elif src == "estat":
                 estat_items.append((sid, code))
+            elif src in G10_SOURCES:
+                g10_groups.setdefault(src, []).append((sid, code))
         except Exception as e:  # keep going; report at the end
             errors.append(f"{sid}: {e}")
     for name, fn in (("boe_iadb", lambda: boe_iadb(iadb)), ("mof", lambda: mof(mof_items)), ("boe_curve", boe_curves),
                      ("fred_dots_prior", fred_dots_prior), ("estat_cpi", lambda: estat_cpi(estat_items))):
         try:
             frames.append(fn())
+        except Exception as e:
+            errors.append(f"{name}: {e}")
+    g10_fns = {
+        "boc": lambda it: G.boc(_get, it, START), "statcan": lambda it: G.statcan(_post, it, START),
+        "rba": lambda it: G.rba(_get, it, START), "abs": lambda it: G.abs_cpi(_get, it, START),
+        "snb": lambda it: G.snb(_get, it, START), "riksbank": lambda it: G.riksbank(_get, it, START),
+        "scb": lambda it: G.pxweb(_post, "https://api.scb.se/OV0104/v1/doris/en/ssd", it, START),
+        "norgesbank": lambda it: G.norgesbank(_get, it, START),
+        "ssb": lambda it: G.pxweb(_post, "https://data.ssb.no/api/v0/en/table", it, START),
+        "bundesbank": lambda it: G.bundesbank(_get, it, START),
+    }
+    for src, items in g10_groups.items():
+        try:
+            frames.append(g10_fns[src](items))
+        except Exception as e:
+            errors.append(f"{src}: {e}")
+    for name, fn in (("treasury_auctions", lambda: G.treasury_auctions(_get)), ("cftc", lambda: G.cftc(_get))):
+        try:
+            fn()
         except Exception as e:
             errors.append(f"{name}: {e}")
     try:

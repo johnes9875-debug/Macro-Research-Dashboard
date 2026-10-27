@@ -30,10 +30,11 @@ def s(sid: str) -> pd.Series:
     # (e.g. US CPI for Oct 2025, never published after the shutdown) leaves a gap
     # instead of shifting every y/y comparison by one period.
     freq = REG.get(sid, {}).get("freq")
-    if freq == "M":
-        x = x.asfreq("MS")
-    elif freq == "Q":
-        x = x.asfreq("QS")
+    if freq in ("M", "Q"):
+        # some sources date periods at month end (RBA): normalise to period start first
+        x.index = x.index.to_period(freq).to_timestamp()
+        x = x[~x.index.duplicated(keep="last")]
+        x = x.asfreq("MS" if freq == "M" else "QS")
     return x
 
 
@@ -100,7 +101,28 @@ ECON = {
                 y2="JP_2Y", y10="JP_10Y", y30="JP_30Y", long_label="30y",
                 path=[("1y", 12, "JP_1Y"), ("2y", 24, "JP_2Y")],
                 path_quality="Proxy: JGB 1y and 2y yields vs the overnight call rate. Rough guide only."),
+    "CAD": dict(cb="BoC", policy=lambda: s("CA_POLICY"), policy_label="BoC target overnight rate",
+                y2="CA_2Y", y10="CA_10Y", y30="CA_LONG", long_label="30y",
+                path=[("3m", 3, "CA_3M"), ("6m", 6, "CA_6M"), ("1y", 12, "CA_1Y"), ("2y", 24, "CA_2Y")],
+                path_quality="Proxy: Government of Canada T-bills and 2y benchmark vs the overnight target."),
+    "AUD": dict(cb="RBA", policy=lambda: s("AU_CASH"), policy_label="RBA cash rate target",
+                y2="AU_2Y", y10="AU_10Y", y30="AU_10Y", long_label="10y",
+                path=[("3m", 3, "AU_BAB_3M"), ("6m", 6, "AU_BAB_6M"), ("2y", 24, "AU_2Y"), ("3y", 36, "AU_3Y")],
+                path_quality="Proxy: bank bills (carry a credit spread over OIS, which the RBA stopped publishing in 2022) and ACGB yields vs the cash rate."),
+    "CHF": dict(cb="SNB", policy=lambda: s("CH_POLICY"), policy_label="SNB policy rate",
+                y2="CH_2Y", y10="CH_10Y", y30="CH_30Y", long_label="30y",
+                path=[("2y", 24, "CH_2Y")],
+                path_quality="Proxy: Confederation 2y vs the SNB rate. SNB publishes bond yields monthly, so this lags by up to a month."),
+    "SEK": dict(cb="Riksbank", policy=lambda: s("SE_POLICY"), policy_label="Riksbank policy rate",
+                y2="SE_2Y", y10="SE_10Y", y30="SE_10Y", long_label="10y",
+                path=[("3m", 3, "SE_3M"), ("2y", 24, "SE_2Y")],
+                path_quality="Proxy: Swedish T-bill 3m and SGB 2y vs the policy rate."),
+    "NOK": dict(cb="Norges Bank", policy=lambda: s("NO_POLICY"), policy_label="Norges Bank policy rate",
+                y2="NO_3Y", y10="NO_10Y", y30="NO_10Y", long_label="10y", y2_label="3y",
+                path=[("3y", 36, "NO_3Y")],
+                path_quality="Proxy: Norwegian government 3y vs the policy rate (no 2y benchmark published)."),
 }
+ORDER = list(ECON)
 
 
 def implied_path(cfg: dict, policy_now: float, asof_shift_days: int = 0) -> list:
@@ -129,7 +151,7 @@ def economy_block(code: str) -> dict:
     p12_1w = next((p for p in path_1w if p["label"] == p12["label"]), None)
     nxt = next((m for m in CAL if m["economy"] == code and pd.Timestamp(m["date"]) >= pd.Timestamp.today().normalize()), None)
     return {
-        "cb": cfg["cb"],
+        "cb": cfg["cb"], "y2_label": cfg.get("y2_label", "2y"),
         "policy": {"label": cfg["policy_label"], "value": r2(pol_now, 3), "date": iso(pol.index[-1])},
         "next_meeting": nxt,
         "y2": rate_block(cfg["y2"]), "y10": rate_block(cfg["y10"]),
@@ -164,6 +186,17 @@ def macro() -> dict:
         "GBP": {"headline": point(s("UK_CPI"), 1), "core": point(s("UK_CPI_CORE"), 1),
                 "extra": [{"name": "Services CPI y/y", **point(s("UK_CPI_SERV"), 1)}],
                 "headline_name": "CPI y/y", "core_name": "Core CPI y/y"},
+        "CAD": {"headline": point(s("CA_CPI"), 1), "core": point(s("CA_CPI_TRIM"), 1),
+                "extra": [{"name": "CPI-median y/y", **point(s("CA_CPI_MED"), 1)}],
+                "headline_name": "CPI y/y", "core_name": "CPI-trim y/y"},
+        "AUD": {"headline": point(s("AU_CPI"), 1), "core": point(s("AU_CPI_TRIM"), 1), "extra": [],
+                "headline_name": "Monthly CPI y/y", "core_name": "Trimmed mean y/y"},
+        "CHF": {"headline": point(s("CH_CPI"), 1), "core": None, "extra": [],
+                "headline_name": "CPI y/y", "core_name": "Core CPI y/y"},
+        "SEK": {"headline": point(s("SE_CPIF"), 1), "core": None, "extra": [],
+                "headline_name": "CPIF y/y (Riksbank target)", "core_name": "CPIF ex energy y/y"},
+        "NOK": {"headline": point(s("NO_CPI"), 1), "core": point(s("NO_CPI_ATE"), 1), "extra": [],
+                "headline_name": "CPI y/y", "core_name": "CPI-ATE y/y"},
         "JPY": {"headline": point(s("JP_CPI"), 1), "core": point(s("JP_CPI_CORE"), 1),
                 "extra": [{"name": "Core-core (ex fresh food & energy) y/y", **point(s("JP_CPI_CORECORE"), 1)},
                           {"name": "Services CPI y/y", **point(s("JP_CPI_SERV"), 1)},
@@ -180,6 +213,12 @@ def macro() -> dict:
         "GBP": [{"name": "Unemployment rate (LFS)", **point(s("UK_UNEMP"), 1)},
                 {"name": "Pay growth, 3m avg y/y", **point(s("UK_PAY"), 1)}],
         "JPY": [{"name": "Unemployment rate", **point(s("JP_UNEMP"), 1)}],
+        "CAD": [{"name": "Unemployment rate (LFS)", **point(s("CA_UNEMP"), 1)}],
+        "AUD": [{"name": "Unemployment rate", **point(s("AU_UNEMP"), 1)}],
+        "NZD": [{"name": "Unemployment rate (quarterly)", **point(s("NZ_UNEMP"), 1)}],
+        "CHF": [{"name": "Registered jobless rate (SA)", **point(s("CH_UNEMP"), 1)}],
+        "SEK": [{"name": "Unemployment rate (LFS, SA)", **point(s("SE_UNEMP"), 1)}],
+        "NOK": [{"name": "Unemployment rate (LFS, SA)", **point(s("NO_UNEMP"), 1)}],
     }
     gdp_us = ((s("US_GDP") / s("US_GDP").shift(1)) ** 4 - 1) * 100
     uk_gdp = s("UK_GDP_M").pct_change() * 100
@@ -187,7 +226,7 @@ def macro() -> dict:
         "USD": {"name": "Real GDP q/q annualised", **point(gdp_us.dropna(), 1)},
         "EUR": {"name": "Real GDP y/y", **point(s("EA_GDP"), 1)},
         "GBP": {"name": "Monthly GDP m/m", **point(uk_gdp.dropna(), 1)},
-        "JPY": None,
+        "JPY": None, "CAD": None, "AUD": None, "NZD": None, "CHF": None, "SEK": None, "NOK": None,
     }
     charts = {
         "inflation": {
@@ -195,10 +234,18 @@ def macro() -> dict:
             "EUR": {"headline": history(s("EA_HICP"), "2021-01-01", n=2), "core": history(s("EA_HICP_CORE"), "2021-01-01", n=2)},
             "GBP": {"headline": history(s("UK_CPI"), "2021-01-01", n=2), "core": history(s("UK_CPI_CORE"), "2021-01-01", n=2)},
             "JPY": {"headline": history(s("JP_CPI"), "2021-01-01", n=2), "core": history(s("JP_CPI_CORE"), "2021-01-01", n=2)},
+            "CAD": {"headline": history(s("CA_CPI"), "2021-01-01", n=2), "core": history(s("CA_CPI_TRIM"), "2021-01-01", n=2)},
+            "AUD": {"headline": history(s("AU_CPI"), "2021-01-01", n=2), "core": history(s("AU_CPI_TRIM"), "2021-01-01", n=2)},
+            "CHF": {"headline": history(s("CH_CPI"), "2021-01-01", n=2), "core": []},
+            "SEK": {"headline": history(s("SE_CPIF"), "2021-01-01", n=2), "core": []},
+            "NOK": {"headline": history(s("NO_CPI"), "2021-01-01", n=2), "core": history(s("NO_CPI_ATE"), "2021-01-01", n=2)},
         },
         "unemployment": {
             "USD": history(s("US_UNEMP"), "2021-01-01", n=2), "EUR": history(s("EA_UNEMP"), "2021-01-01", n=2),
             "GBP": history(s("UK_UNEMP"), "2021-01-01", n=2), "JPY": history(s("JP_UNEMP"), "2021-01-01", n=2),
+            "CAD": history(s("CA_UNEMP"), "2021-01-01", n=2), "AUD": history(s("AU_UNEMP"), "2021-01-01", n=2),
+            "NZD": history(s("NZ_UNEMP"), "2021-01-01", n=2), "CHF": history(s("CH_UNEMP"), "2021-01-01", n=2),
+            "SEK": history(s("SE_UNEMP"), "2021-01-01", n=2), "NOK": history(s("NO_UNEMP"), "2021-01-01", n=2),
         },
     }
     return {"inflation": infl, "labour": labour, "growth": growth, "charts": charts}
@@ -217,7 +264,11 @@ def releases() -> list:
              ("GBP", "Services CPI y/y", s("UK_CPI_SERV"), 1), ("GBP", "Unemployment rate", s("UK_UNEMP"), 1),
              ("GBP", "Pay growth 3m y/y", s("UK_PAY"), 1), ("GBP", "Monthly GDP m/m", s("UK_GDP_M").pct_change() * 100, 1),
              ("JPY", "CPI y/y", s("JP_CPI"), 1), ("JPY", "Core CPI (ex fresh food) y/y", s("JP_CPI_CORE"), 1),
-             ("JPY", "Tokyo core CPI y/y", s("JP_TOKYO_CORE"), 1), ("JPY", "Unemployment rate", s("JP_UNEMP"), 1)]
+             ("JPY", "Tokyo core CPI y/y", s("JP_TOKYO_CORE"), 1), ("JPY", "Unemployment rate", s("JP_UNEMP"), 1),
+             ("CAD", "CPI y/y", s("CA_CPI"), 1), ("CAD", "CPI-trim y/y", s("CA_CPI_TRIM"), 1), ("CAD", "Unemployment rate", s("CA_UNEMP"), 1),
+             ("AUD", "Monthly CPI y/y", s("AU_CPI"), 1), ("AUD", "Trimmed mean y/y", s("AU_CPI_TRIM"), 1), ("AUD", "Unemployment rate", s("AU_UNEMP"), 1),
+             ("CHF", "CPI y/y", s("CH_CPI"), 1), ("SEK", "CPIF y/y", s("SE_CPIF"), 1), ("SEK", "Unemployment rate", s("SE_UNEMP"), 1),
+             ("NOK", "CPI-ATE y/y", s("NO_CPI_ATE"), 1), ("NOK", "Unemployment rate", s("NO_UNEMP"), 1)]
     for eco, name, x, n in specs:
         x = x.dropna()
         rows.append({"economy": eco, "name": name, "period": x.index[-1].strftime("%b %Y"), "period_iso": iso(x.index[-1]),
@@ -227,9 +278,10 @@ def releases() -> list:
 
 # ------------------------------------------------------------------ cross-market
 def spreads() -> list:
-    pairs = [("UST – Euro AAA 10y", "US_10Y", "EA_10Y"), ("Gilt – Euro AAA 10y", "UK_10Y", "EA_10Y"),
-             ("UST – JGB 10y", "US_10Y", "JP_10Y"), ("UST – Euro AAA 2y", "US_2Y", "EA_2Y"),
-             ("Gilt – UST 10y", "UK_10Y", "US_10Y")]
+    pairs = [("UST – Bund 10y", "US_10Y", "DE_10Y"), ("Gilt – Bund 10y", "UK_10Y", "DE_10Y"),
+             ("UST – Bund 2y", "US_2Y", "DE_2Y"), ("UST – JGB 10y", "US_10Y", "JP_10Y"),
+             ("Gilt – UST 10y", "UK_10Y", "US_10Y"), ("ACGB – UST 10y", "AU_10Y", "US_10Y"),
+             ("GoC – UST 10y", "CA_10Y", "US_10Y"), ("Euro AAA – Bund 10y", "EA_10Y", "DE_10Y")]
     out = []
     for name, a, b in pairs:
         x = (pd.concat([s(a), s(b)], axis=1).dropna().pipe(lambda d: d.iloc[:, 0] - d.iloc[:, 1]) * 100)
