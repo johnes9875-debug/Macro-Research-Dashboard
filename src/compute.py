@@ -6,6 +6,7 @@ Run: python src/compute.py
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -123,6 +124,26 @@ ECON = {
                 path_quality="Proxy: Norwegian government 3y vs the policy rate (no 2y benchmark published)."),
 }
 ORDER = list(ECON)
+
+
+def sgt_time(m) -> str:
+    """ISO timestamp (+08:00) of a decision from its 'sgt' label, e.g. '28 Oct 21:45'; 'midday' = 12:00."""
+    d = pd.Timestamp(m["date"])
+    lab = str(m["sgt"]).split(",")[0].strip()
+    hm = re.search(r"(\d{1,2}):(\d{2})", str(m["sgt"]))
+    t = pd.Timestamp(f"{lab.split()[0]} {lab.split()[1]} {d.year}")
+    if t.month < d.month:  # decision late on 31 Dec local, early 1 Jan SGT
+        t = t.replace(year=d.year + 1)
+    t = t.replace(hour=int(hm.group(1)) if hm else 12, minute=int(hm.group(2)) if hm else 0)
+    return t.strftime("%Y-%m-%dT%H:%M:00+08:00")
+
+
+def cb_calendar() -> list:
+    """Upcoming decisions sorted by Singapore time (not local date), so tonight's BoC precedes tomorrow's Fed."""
+    now = pd.Timestamp.now(tz="Asia/Singapore").tz_localize(None) - pd.Timedelta(hours=3)
+    rows = [m | {"date": str(m["date"]), "sgt_iso": sgt_time(m)} for m in CAL]
+    rows = [r for r in rows if pd.Timestamp(r["sgt_iso"][:16]) >= now]
+    return sorted(rows, key=lambda r: r["sgt_iso"])
 
 
 def implied_path(cfg: dict, policy_now: float, asof_shift_days: int = 0) -> list:
@@ -302,7 +323,7 @@ def main() -> None:
         "macro": macro(),
         "releases": releases(),
         "spreads": spreads(),
-        "calendar": [m | {"date": str(m["date"])} for m in CAL if pd.Timestamp(m["date"]) >= pd.Timestamp.today().normalize()],
+        "calendar": cb_calendar(),
         "freshness": {sid: iso(g["date"].max()) for sid, g in D.groupby("series_id") if "OIS_FWD" not in sid},
         "sources": ["FRED (St. Louis Fed)", "ECB Data Portal", "Eurostat (prc_hicp_minr)", "ONS", "Bank of England (IADB, yield curves)",
                     "Bank of Japan Time-Series API", "Japan Ministry of Finance (JGB yields)"],

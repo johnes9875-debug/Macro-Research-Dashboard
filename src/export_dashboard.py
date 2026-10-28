@@ -120,5 +120,5 @@ rel = [{"key": f"{r['economy']} {r['name']}", **{k: r[k] for k in ("economy", "n
 write("releases", rel)
 
 # 9. calendar
-cal = [{"key": f"{m['cb']} {m['date']}", "date": m["date"], "cb": m["cb"], "economy": m["economy"], "sgt": m["sgt"]} for m in SRC["calendar"]]
+cal = [{"key": f"{m['cb']} {m['date']}", "date": m["date"], "cb": m["cb"], "economy": m["economy"], "sgt": m["sgt"], "sgt_iso": m.get("sgt_iso")} for m in SRC["calendar"]]
 write("calendar", cal)

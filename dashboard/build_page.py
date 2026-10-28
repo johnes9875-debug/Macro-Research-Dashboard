@@ -137,7 +137,7 @@ HTML = f"""<style>{CSS}</style>
 
 <div class="rm">
   <header class="rm-bar" id="top">
-    <div class="rm-brand"><h1>G10 Rates Monitor</h1><span class="rm-ccys">USD · EUR · GBP · JPY</span></div>
+    <div class="rm-brand"><h1>G10 Rates Monitor</h1><span class="rm-ccys">{" · ".join(c for c, _ in ECON)}</span></div>
     <div class="rm-meta">
       <span>US close <b class="rm-num" data-source="overview" data-field="y10_date" data-where="economy=USD"></b></span>
       <span class="rm-pill" id="fresh-pill"><span><b class="rm-num" data-source="freshness" data-field="fresh"></b>/<span class="rm-num" data-source="freshness" data-field="total"></span> series fresh</span></span>
@@ -145,10 +145,7 @@ HTML = f"""<style>{CSS}</style>
     </div>
   </header>
 
-  <p class="rm-reads" id="takeaway">Priced vs policy, ~12m: USD <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=USD"></b> ·
-    EUR <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=EUR"></b> ·
-    GBP <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=GBP"></b> ·
-    JPY <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=JPY"></b> bp.
+  <p class="rm-reads" id="takeaway">Priced vs policy, ~12m: {' · '.join(f'{c} <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy={c}"></b>' for c, _ in ECON)} bp.
     BoE OIS prices <b class="rm-num" data-source="boe_meetings" data-field="change_bp" data-row="0"></b>bp at the <span data-source="boe_meetings" data-field="date" data-row="0"></span> MPC
     (<span class="rm-num" data-source="boe_meetings" data-field="hike_odds_pct" data-row="0"></span>% of a 25bp hike).</p>
 
@@ -562,7 +559,8 @@ SCRIPT = r"""
       });
     }
     if (cal.status === 'ok' && cal.data.length) {
-      const r0 = cal.data[0];
+      const nowMs = Date.now();
+      const r0 = cal.data.find(r => r.sgt_iso && Date.parse(r.sgt_iso) > nowMs) || cal.data[0];
       document.querySelectorAll('[data-source="calendar"][data-row="0"]').forEach(el => el.textContent = r0[el.dataset.field]);
     }
     if (bm.status === 'ok' && bm.data.length) {
