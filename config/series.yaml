@@ -184,3 +184,6 @@ series:
   - {id: CN_30Y,      economy: CNY, name: CGB 30y,                       source: chinabond,  code: "30",         freq: D, transform: level, tenor: 30}
   - {id: FX_USDCNY_FIX, economy: CNY, name: USDCNY central parity fixing, source: chinamoney, code: "CCPR|USD/CNY", freq: D, transform: level}
   - {id: FX_USDCNY,   economy: CNY, name: USDCNY (noon NY),              source: fred,       code: DEXCHUS,      freq: D, transform: level}
+  - {id: CN_CPI,      economy: CNY, name: China CPI y/y (NBS via OECD),       source: oecd, code: "OECD.SDD.TPS,DSD_PRICES@DF_PRICES_ALL,1.0|CHN.M.N.CPI.PA._T.N.GY",  freq: M, transform: level}
+  - {id: CN_CPI_FOOD, economy: CNY, name: China food CPI y/y (NBS via OECD),  source: oecd, code: "OECD.SDD.TPS,DSD_PRICES@DF_PRICES_ALL,1.0|CHN.M.N.CPI.PA.CP01.N.GY", freq: M, transform: level}
+  - {id: CN_EXPORTS,  economy: CNY, name: China exports y/y, USD (via OECD),  source: oecd, code: "OECD.SDD.STES,DSD_KEI@DF_KEI,|CHN.M.EX.GR._T..GY",              freq: M, transform: level}

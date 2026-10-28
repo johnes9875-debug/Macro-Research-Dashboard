@@ -220,6 +220,8 @@ def macro() -> dict:
                 "headline_name": "CPI y/y", "core_name": "Core CPI y/y"},
         "SEK": {"headline": point(s("SE_CPIF"), 1), "core": None, "extra": [],
                 "headline_name": "CPIF y/y (Riksbank target)", "core_name": "CPIF ex energy y/y"},
+        "CNY": {"headline": point(s("CN_CPI"), 1), "core": None, "extra": [{"name": "Food CPI y/y", **point(s("CN_CPI_FOOD"), 1)}],
+                "headline_name": "CPI y/y (via OECD)", "core_name": "Core CPI y/y"},
         "NOK": {"headline": point(s("NO_CPI"), 1), "core": point(s("NO_CPI_ATE"), 1), "extra": [],
                 "headline_name": "CPI y/y", "core_name": "CPI-ATE y/y"},
         "JPY": {"headline": point(s("JP_CPI"), 1), "core": point(s("JP_CPI_CORE"), 1),
@@ -252,6 +254,7 @@ def macro() -> dict:
         "EUR": {"name": "Real GDP y/y", **point(s("EA_GDP"), 1)},
         "GBP": {"name": "Monthly GDP m/m", **point(uk_gdp.dropna(), 1)},
         "JPY": None, "CAD": None, "AUD": None, "NZD": None, "CHF": None, "SEK": None, "NOK": None,
+        "CNY": {"name": "Exports y/y (USD)", **point(s("CN_EXPORTS"), 1)},
     }
     charts = {
         "inflation": {
@@ -264,6 +267,7 @@ def macro() -> dict:
             "CHF": {"headline": history(s("CH_CPI"), "2021-01-01", n=2), "core": []},
             "SEK": {"headline": history(s("SE_CPIF"), "2021-01-01", n=2), "core": []},
             "NOK": {"headline": history(s("NO_CPI"), "2021-01-01", n=2), "core": history(s("NO_CPI_ATE"), "2021-01-01", n=2)},
+            "CNY": {"headline": history(s("CN_CPI"), "2021-01-01", n=2), "core": []},
         },
         "unemployment": {
             "USD": history(s("US_UNEMP"), "2021-01-01", n=2), "EUR": history(s("EA_UNEMP"), "2021-01-01", n=2),
@@ -293,7 +297,8 @@ def releases() -> list:
              ("CAD", "CPI y/y", s("CA_CPI"), 1), ("CAD", "CPI-trim y/y", s("CA_CPI_TRIM"), 1), ("CAD", "Unemployment rate", s("CA_UNEMP"), 1),
              ("AUD", "Monthly CPI y/y", s("AU_CPI"), 1), ("AUD", "Trimmed mean y/y", s("AU_CPI_TRIM"), 1), ("AUD", "Unemployment rate", s("AU_UNEMP"), 1),
              ("CHF", "CPI y/y", s("CH_CPI"), 1), ("SEK", "CPIF y/y", s("SE_CPIF"), 1), ("SEK", "Unemployment rate", s("SE_UNEMP"), 1),
-             ("NOK", "CPI-ATE y/y", s("NO_CPI_ATE"), 1), ("NOK", "Unemployment rate", s("NO_UNEMP"), 1)]
+             ("NOK", "CPI-ATE y/y", s("NO_CPI_ATE"), 1), ("NOK", "Unemployment rate", s("NO_UNEMP"), 1),
+             ("CNY", "CPI y/y", s("CN_CPI"), 1), ("CNY", "Exports y/y", s("CN_EXPORTS"), 1)]
     for eco, name, x, n in specs:
         x = x.dropna()
         rows.append({"economy": eco, "name": name, "period": x.index[-1].strftime("%b %Y"), "period_iso": iso(x.index[-1]),

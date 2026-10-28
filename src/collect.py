@@ -81,6 +81,15 @@ def fred(sid: str, code: str) -> pd.DataFrame:
     return _frame(sid, [o["date"] for o in obs], [o["value"] for o in obs])
 
 
+def oecd(sid: str, code: str) -> pd.DataFrame:
+    """OECD SDMX API. code = '<agency>,<dataflow>,<version>|<key>', e.g. China CPI y/y via the OECD prices database."""
+    flow, key = code.split("|", 1)
+    r = _get(f"https://sdmx.oecd.org/public/rest/data/{flow}/{key}", params={"startPeriod": START[:7], "format": "csvfilewithlabels"})
+    d = pd.read_csv(io.StringIO(r.text), dtype=str)
+    t = d["TIME_PERIOD"].str.replace(r"-Q(\d)", lambda m: f"-{int(m.group(1)) * 3 - 2:02d}", regex=True)
+    return _frame(sid, pd.to_datetime(t + "-01"), d["OBS_VALUE"])
+
+
 def estat_cpi(items: list[tuple[str, str]]) -> pd.DataFrame:
     """Japan CPI year-on-year rates from e-Stat (Statistics Bureau, 2020-base table 0003427113).
     code = "<area>/<item>", e.g. "00000/0161" (all Japan, all items less fresh food). Needs ESTAT_APP_ID."""
@@ -385,6 +394,8 @@ def main() -> int:
                 frames.append(eurostat_hicp(sid, code))
             elif src == "ons":
                 frames.append(ons(sid, code))
+            elif src == "oecd":
+                frames.append(oecd(sid, code))
             elif src == "boj":
                 frames.append(boj(sid, code))
             elif src == "boe_iadb":
