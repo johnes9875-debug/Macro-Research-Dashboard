@@ -128,7 +128,12 @@ series:
   # NZD — RBNZ blocks scripts (Cloudflare); OECD series via FRED, monthly/quarterly only
   - {id: NZ_3M,       economy: NZD, name: NZ 3m bank bill (monthly avg),  source: fred, code: IR3TIB01NZM156N, freq: M, transform: level}
   - {id: NZ_10Y,      economy: NZD, name: NZGB 10y (monthly avg),         source: fred, code: IRLTLT01NZM156N, freq: M, transform: level, tenor: 10}
-  - {id: NZ_UNEMP,    economy: NZD, name: Unemployment rate (quarterly),  source: fred, code: LRHUTTTTNZQ156S, freq: Q, transform: level, tier: 1}
+  - {id: NZ_UNEMP,    economy: NZD, name: Unemployment rate (HLFS, SA, via OECD), source: oecd, code: "OECD.SDD.STES,DSD_KEI@DF_KEI,|NZL.Q.UNEMP.PT_LF..Y._Z", freq: Q, transform: level, tier: 1}
+  - {id: NZ_CPI,      economy: NZD, name: CPI y/y (Stats NZ via OECD),     source: oecd, code: "OECD.SDD.TPS,DSD_PRICES@DF_PRICES_ALL,1.0|NZL.Q.N.CPI.PA._T.N.GY",           freq: Q, transform: level, tier: 1}
+  - {id: NZ_CPI_CORE, economy: NZD, name: CPI ex food and energy y/y (via OECD), source: oecd, code: "OECD.SDD.TPS,DSD_PRICES@DF_PRICES_ALL,1.0|NZL.Q.N.CPI.PA._TXCP01_NRG.N.GY", freq: Q, transform: level}
+  - {id: NZ_CPI_SERV, economy: NZD, name: Services CPI y/y (via OECD),     source: oecd, code: "OECD.SDD.TPS,DSD_PRICES@DF_PRICES_ALL,1.0|NZL.Q.N.CPI.PA.SERV.N.GY",         freq: Q, transform: level}
+  - {id: NZ_GDP,      economy: NZD, name: Real GDP y/y (via OECD),         source: oecd, code: "OECD.SDD.STES,DSD_KEI@DF_KEI,|NZL.Q.B1GQ_Q.GR..Y.GY",            freq: Q, transform: level}
+  - {id: NZ_CALL,     economy: NZD, name: Interbank call rate (monthly avg, via OECD), source: oecd, code: "OECD.SDD.STES,DSD_KEI@DF_KEI,|NZL.M.IRSTCI.PA...",  freq: M, transform: level}
   # CHF — SNB data portal (Confederation yields are month-end)
   - {id: CH_POLICY,   economy: CHF, name: SNB policy rate,            source: snb, code: snbgwdzid/LZ,       freq: D, transform: level}
   - {id: CH_SARON,    economy: CHF, name: SARON,                      source: snb, code: snbgwdzid/SARON,    freq: D, transform: level}

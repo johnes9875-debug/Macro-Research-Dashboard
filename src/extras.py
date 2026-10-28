@@ -125,7 +125,7 @@ CB_SGT_TIME = {}
 for m in yaml.safe_load((ROOT / "config" / "calendar.yaml").read_text())["meetings"]:
     d = pd.Timestamp(m["date"])
     if TODAY <= d <= TODAY + pd.Timedelta(days=60):
-        pol = C.ECON[m["economy"]]["policy"]() if m["economy"] in C.ECON else s("NZ_3M")
+        pol = C.ECON[m["economy"]]["policy"]() if m["economy"] in C.ECON else s("NZ_CALL")
         # show the Singapore date and time: "29 Oct 02:00" -> 2026-10-29, 02:00
         sg_day = pd.to_datetime(f"{m['sgt'].split(',')[0].split(' ')[0]} {m['sgt'].split(',')[0].split(' ')[1]} {d.year}", format="%d %b %Y", errors="coerce")
         sg_day = d if pd.isna(sg_day) else sg_day
@@ -133,7 +133,7 @@ for m in yaml.safe_load((ROOT / "config" / "calendar.yaml").read_text())["meetin
                          "event": "PBoC loan prime rate fixing" if m["economy"] == "CNY" else f"{m['cb']} policy decision", "period": "",
                          "last": (f"target {s('US_FF_LOWER').dropna().iloc[-1]:.2f}–{s('US_FF_UPPER').dropna().iloc[-1]:.2f}%" if m["economy"] == "USD"
                                   else (f"LPR 1y {s('CN_LPR1Y').dropna().iloc[-1]:.2f}% · 5y {s('CN_LPR5Y').dropna().iloc[-1]:.2f}%" if m["economy"] == "CNY"
-                                  else ("NZ 3m bank bill " + f"{pol.dropna().iloc[-1]:.2f}% (monthly)" if m["economy"] == "NZD"
+                                  else ("call rate " + f"{pol.dropna().iloc[-1]:.2f}% (monthly avg)" if m["economy"] == "NZD"
                                         else f"policy rate {pol.dropna().iloc[-1]:.2f}%"))),
                          "tier": 1, "source": "config/calendar.yaml", "sgt_note": m["sgt"]})
 cal = sorted(cal_rows, key=lambda r: (r["date"], r["sgt"] or "99"))

@@ -3,7 +3,7 @@ from pathlib import Path
 
 ECON = [("USD", "Fed"), ("EUR", "ECB"), ("GBP", "BoE"), ("JPY", "BoJ"), ("CAD", "BoC"), ("AUD", "RBA"), ("CHF", "SNB"), ("SEK", "Riksbank"), ("NOK", "Norges Bank"), ("CNY", "PBoC")]
 FX_PAIRS = ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "USDSEK", "USDNOK", "USDCNY"]
-INFL_ECO = ["USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "SEK", "NOK", "CNY"]
+INFL_ECO = ["USD", "EUR", "GBP", "JPY", "CAD", "AUD", "NZD", "CHF", "SEK", "NOK", "CNY"]
 STRIP = [("USD 2y", "UST 2y"), ("USD 10y", "UST 10y"), ("USD 30y", "UST 30y"), ("USD 10y breakeven", "US 10y BEI"),
          ("EUR 10y Bund", "Bund 10y"), ("GBP 2y OIS", "SONIA 2y OIS"), ("GBP 10y gilt", "Gilt 10y"), ("JPY 10y JGB", "JGB 10y")]
 
@@ -776,7 +776,7 @@ SCRIPT = r"""
       });
     }
     legend('infl-legend', [['Headline', C[0]], ['Core', C[2]]]);
-    const INFL = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'SEK', 'NOK', 'CNY'];
+    const INFL = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'NZD', 'CHF', 'SEK', 'NOK', 'CNY'];
     if (bad(mh.status)) return INFL.map(e => 'infl-' + e).concat(['unemp-chart', 'unemp-chart2']).forEach(id => failBox(document.getElementById(id)));
     if (mh.status !== 'ok' || !visible(document.getElementById('infl-USD'))) return;
     const pts = (e, mtr) => mh.data.filter(r => r.economy === e && r.metric === mtr).map(r => ({ x: parse(r.date), y: N(r.value) }));
