@@ -2,6 +2,7 @@
 # Sources: federalreserve schedule via fedratecalc.com; ECB via admiralmarkets.com; BoE news 2024-12 "MPC dates for 2026"; BoJ via days.to;
 # BoC 2026 schedule (bankofcanada.ca); RBA media release mr-25-02; RBNZ 2026/27 dates (mpamag.com); SNB via financecalendar.com;
 # Riksbank calendar 2026; Norges Bank policy rate decisions page. Checked 2026-10-27.
+# PBoC: monthly loan prime rate fixing, 09:00 Beijing (= SGT) on the 20th or next business day (financecalendar.com). Checked 2026-10-28.
 meetings:
   - {cb: Fed, economy: USD, date: 2026-10-28, sgt: "29 Oct 02:00"}
   - {cb: BoC, economy: CAD, date: 2026-10-28, sgt: "28 Oct 21:45"}
@@ -9,6 +10,7 @@ meetings:
   - {cb: ECB, economy: EUR, date: 2026-10-29, sgt: "29 Oct 21:15"}
   - {cb: BoJ, economy: JPY, date: 2026-10-30, sgt: "30 Oct, midday (no fixed time)"}
   - {cb: RBA, economy: AUD, date: 2026-11-03, sgt: "3 Nov 11:30"}
+  - {cb: PBoC (LPR), economy: CNY, date: 2026-11-20, sgt: "20 Nov 09:00"}
   - {cb: Riksbank, economy: SEK, date: 2026-11-04, sgt: "4 Nov 16:30"}
   - {cb: BoE, economy: GBP, date: 2026-11-05, sgt: "5 Nov 20:00"}
   - {cb: Norges Bank, economy: NOK, date: 2026-11-05, sgt: "5 Nov 17:00"}
@@ -17,6 +19,7 @@ meetings:
   - {cb: BoC, economy: CAD, date: 2026-12-09, sgt: "9 Dec 22:45"}
   - {cb: RBNZ, economy: NZD, date: 2026-12-09, sgt: "9 Dec 09:00"}
   - {cb: SNB, economy: CHF, date: 2026-12-10, sgt: "10 Dec 16:30"}
+  - {cb: PBoC (LPR), economy: CNY, date: 2026-12-21, sgt: "21 Dec 09:00"}
   - {cb: Riksbank, economy: SEK, date: 2026-12-16, sgt: "16 Dec 16:30"}
   - {cb: ECB, economy: EUR, date: 2026-12-17, sgt: "17 Dec 21:15"}
   - {cb: BoE, economy: GBP, date: 2026-12-17, sgt: "17 Dec 20:00"}

@@ -130,10 +130,11 @@ for m in yaml.safe_load((ROOT / "config" / "calendar.yaml").read_text())["meetin
         sg_day = pd.to_datetime(f"{m['sgt'].split(',')[0].split(' ')[0]} {m['sgt'].split(',')[0].split(' ')[1]} {d.year}", format="%d %b %Y", errors="coerce")
         sg_day = d if pd.isna(sg_day) else sg_day
         cal_rows.append({"date": sg_day.strftime("%Y-%m-%d"), "sgt": m["sgt"].split(" ")[-1] if ":" in m["sgt"] else "midday", "economy": m["economy"], "kind": "Central bank",
-                         "event": f"{m['cb']} policy decision", "period": "",
+                         "event": "PBoC loan prime rate fixing" if m["economy"] == "CNY" else f"{m['cb']} policy decision", "period": "",
                          "last": (f"target {s('US_FF_LOWER').dropna().iloc[-1]:.2f}–{s('US_FF_UPPER').dropna().iloc[-1]:.2f}%" if m["economy"] == "USD"
+                                  else (f"LPR 1y {s('CN_LPR1Y').dropna().iloc[-1]:.2f}% · 5y {s('CN_LPR5Y').dropna().iloc[-1]:.2f}%" if m["economy"] == "CNY"
                                   else ("NZ 3m bank bill " + f"{pol.dropna().iloc[-1]:.2f}% (monthly)" if m["economy"] == "NZD"
-                                        else f"policy rate {pol.dropna().iloc[-1]:.2f}%")),
+                                        else f"policy rate {pol.dropna().iloc[-1]:.2f}%"))),
                          "tier": 1, "source": "config/calendar.yaml", "sgt_note": m["sgt"]})
 cal = sorted(cal_rows, key=lambda r: (r["date"], r["sgt"] or "99"))
 for r in cal:
@@ -229,7 +230,8 @@ XA = [("vix", "VIX", s("US_VIX"), "", 1, "Risk"), ("ig", "US IG credit spread", 
       ("usdjpy", "USDJPY", s("FX_USDJPY"), "", 2, "FX"), ("audusd", "AUDUSD", s("FX_AUDUSD"), "", 4, "FX"),
       ("usdcad", "USDCAD", s("FX_USDCAD"), "", 4, "FX"), ("usdchf", "USDCHF", s("FX_USDCHF"), "", 4, "FX"),
       ("nzdusd", "NZDUSD", s("FX_NZDUSD"), "", 4, "FX"), ("usdsek", "USDSEK", s("FX_USDSEK"), "", 3, "FX"),
-      ("usdnok", "USDNOK", s("FX_USDNOK"), "", 3, "FX")]
+      ("usdnok", "USDNOK", s("FX_USDNOK"), "", 3, "FX"), ("usdcny", "USDCNY (noon NY)", s("FX_USDCNY"), "", 4, "FX"),
+      ("usdcnyfix", "USDCNY PBoC fixing", s("FX_USDCNY_FIX"), "", 4, "FX")]
 xa = []
 for key, label, x, unit, n, grp in XA:
     x = x.dropna()
@@ -252,7 +254,7 @@ write("cross_asset", xa)
 PAIRS = [("EURUSD", "FX_EURUSD", "EA_2Y", "US_2Y", "EUR 2y − US 2y"), ("GBPUSD", "FX_GBPUSD", "UK_2Y", "US_2Y", "UK 2y − US 2y"),
          ("USDJPY", "FX_USDJPY", "US_2Y", "JP_2Y", "US 2y − JP 2y"), ("AUDUSD", "FX_AUDUSD", "AU_2Y", "US_2Y", "AU 2y − US 2y"),
          ("USDCAD", "FX_USDCAD", "US_2Y", "CA_2Y", "US 2y − CA 2y"), ("USDSEK", "FX_USDSEK", "US_2Y", "SE_2Y", "US 2y − SE 2y"),
-         ("USDNOK", "FX_USDNOK", "US_2Y", "NO_3Y", "US 2y − NO 3y")]
+         ("USDNOK", "FX_USDNOK", "US_2Y", "NO_3Y", "US 2y − NO 3y"), ("USDCNY", "FX_USDCNY", "US_2Y", "CN_2Y", "US 2y − CN 2y")]
 fxr, fxh = [], []
 for pair, fx_id, a, b, diff_label in PAIRS:
     df = pd.concat([s(fx_id), s(a), s(b)], axis=1, sort=True).dropna()

@@ -1,8 +1,8 @@
 """Generate the dashboard page (index.html) — v3, institutional monitor styling."""
 from pathlib import Path
 
-ECON = [("USD", "Fed"), ("EUR", "ECB"), ("GBP", "BoE"), ("JPY", "BoJ"), ("CAD", "BoC"), ("AUD", "RBA"), ("CHF", "SNB"), ("SEK", "Riksbank"), ("NOK", "Norges Bank")]
-FX_PAIRS = ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "USDSEK", "USDNOK"]
+ECON = [("USD", "Fed"), ("EUR", "ECB"), ("GBP", "BoE"), ("JPY", "BoJ"), ("CAD", "BoC"), ("AUD", "RBA"), ("CHF", "SNB"), ("SEK", "Riksbank"), ("NOK", "Norges Bank"), ("CNY", "PBoC")]
+FX_PAIRS = ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "USDSEK", "USDNOK", "USDCNY"]
 INFL_ECO = ["USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "SEK", "NOK"]
 STRIP = [("USD 2y", "UST 2y"), ("USD 10y", "UST 10y"), ("USD 30y", "UST 30y"), ("USD 10y breakeven", "US 10y BEI"),
          ("EUR 10y Bund", "Bund 10y"), ("GBP 2y OIS", "SONIA 2y OIS"), ("GBP 10y gilt", "Gilt 10y"), ("JPY 10y JGB", "JGB 10y")]
@@ -437,7 +437,7 @@ SCRIPT = r"""
   });
 
 (() => {
-  const ECO = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'SEK', 'NOK'];
+  const ECO = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'SEK', 'NOK', 'CNY'];
   const C = dash.colors;
   const MINUS = '−';
   const sgn = (v, d = 0) => (v == null || isNaN(v)) ? '—' : (v > 0 ? '+' : v < 0 ? MINUS : '') + Math.abs(v).toFixed(d);
@@ -958,7 +958,7 @@ SCRIPT = r"""
       });
     }
     legend('fxr-legend', [['Spot', C[0]], ['Rate-implied fair value', 'var(--cds-chart-muted)', true]]);
-    ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDSEK', 'USDNOK'].forEach(p => {
+    ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDSEK', 'USDNOK', 'USDCNY'].forEach(p => {
       const el = document.getElementById('fxr-' + p);
       if (bad(fh.status)) return failBox(el);
       if (fh.status !== 'ok' || !visible(el)) return;

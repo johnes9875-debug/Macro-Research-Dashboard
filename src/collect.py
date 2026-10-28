@@ -417,6 +417,14 @@ def main() -> int:
             frames.append(g10_fns[src](items))
         except Exception as e:
             errors.append(f"{src}: {e}")
+    import collect_cn as CN
+    for src, fn in (("pbc_omo", CN.pbc_omo), ("chinamoney", CN.chinamoney), ("chinabond", CN.chinabond)):
+        items = [(s["id"], str(s["code"])) for s in reg if s["source"] == src]
+        if items:
+            try:
+                frames.append(fn(items))
+            except Exception as e:
+                errors.append(f"{src}: {e}")
     for name, fn in (("treasury_auctions", lambda: G.treasury_auctions(_get)), ("cftc", lambda: G.cftc(_get))):
         try:
             fn()

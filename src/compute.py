@@ -122,6 +122,10 @@ ECON = {
                 y2="NO_3Y", y10="NO_10Y", y30="NO_10Y", long_label="10y", y2_label="3y",
                 path=[("3y", 36, "NO_3Y")],
                 path_quality="Proxy: Norwegian government 3y vs the policy rate (no 2y benchmark published)."),
+    "CNY": dict(cb="PBoC", policy=lambda: s("CN_POLICY"), policy_label="PBoC 7-day reverse repo rate",
+                y2="CN_2Y", y10="CN_10Y", y30="CN_30Y", long_label="30y",
+                path=[("3m", 3, "CN_SHIBOR3M"), ("1y", 12, "CN_1Y"), ("2y", 24, "CN_2Y")],
+                path_quality="Proxy: Shibor 3m and CGB 1y/2y vs the 7-day reverse repo rate. Shibor carries a bank credit spread and CGBs trade below policy on safe-haven demand, so read direction only."),
 }
 ORDER = list(ECON)
 
@@ -302,7 +306,8 @@ def spreads() -> list:
     pairs = [("UST – Bund 10y", "US_10Y", "DE_10Y"), ("Gilt – Bund 10y", "UK_10Y", "DE_10Y"),
              ("UST – Bund 2y", "US_2Y", "DE_2Y"), ("UST – JGB 10y", "US_10Y", "JP_10Y"),
              ("Gilt – UST 10y", "UK_10Y", "US_10Y"), ("ACGB – UST 10y", "AU_10Y", "US_10Y"),
-             ("GoC – UST 10y", "CA_10Y", "US_10Y"), ("Euro AAA – Bund 10y", "EA_10Y", "DE_10Y")]
+             ("GoC – UST 10y", "CA_10Y", "US_10Y"), ("Euro AAA – Bund 10y", "EA_10Y", "DE_10Y"),
+             ("UST – CGB 10y", "US_10Y", "CN_10Y"), ("CGB – JGB 10y", "CN_10Y", "JP_10Y")]
     out = []
     for name, a, b in pairs:
         x = (pd.concat([s(a), s(b)], axis=1).dropna().pipe(lambda d: d.iloc[:, 0] - d.iloc[:, 1]) * 100)

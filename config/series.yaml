@@ -168,3 +168,19 @@ series:
   - {id: FX_USDCHF,   economy: CHF, name: USDCHF, source: fred, code: DEXSZUS, freq: D, transform: level}
   - {id: FX_USDSEK,   economy: SEK, name: USDSEK, source: fred, code: DEXSDUS, freq: D, transform: level}
   - {id: FX_USDNOK,   economy: NOK, name: USDNOK, source: fred, code: DEXNOUS, freq: D, transform: level}
+
+  # ---------------- CNY (PBoC open market operations, CFETS/ChinaMoney, ChinaBond)
+  - {id: CN_POLICY,   economy: CNY, name: PBoC 7-day reverse repo rate,  source: pbc_omo,    code: 7D,           freq: D, transform: level}
+  - {id: CN_LPR1Y,    economy: CNY, name: Loan prime rate 1y,            source: chinamoney, code: "LPR|1Y",     freq: M, transform: level}
+  - {id: CN_LPR5Y,    economy: CNY, name: Loan prime rate 5y,            source: chinamoney, code: "LPR|5Y",     freq: M, transform: level}
+  - {id: CN_FR007,    economy: CNY, name: 7-day repo fixing (FR007),     source: chinamoney, code: "FR|FR007",   freq: D, transform: level}
+  - {id: CN_DR007,    economy: CNY, name: 7-day depository repo fixing (FDR007), source: chinamoney, code: "FR|FDR007", freq: D, transform: level}
+  - {id: CN_SHIBOR3M, economy: CNY, name: Shibor 3m,                     source: chinamoney, code: "SHIBOR|3M",  freq: D, transform: level}
+  - {id: CN_SHIBOR1Y, economy: CNY, name: Shibor 1y,                     source: chinamoney, code: "SHIBOR|1Y",  freq: D, transform: level}
+  - {id: CN_1Y,       economy: CNY, name: CGB 1y,                        source: chinabond,  code: "1",          freq: D, transform: level, tenor: 1}
+  - {id: CN_2Y,       economy: CNY, name: CGB 2y,                        source: chinabond,  code: "2",          freq: D, transform: level, tenor: 2}
+  - {id: CN_5Y,       economy: CNY, name: CGB 5y,                        source: chinabond,  code: "5",          freq: D, transform: level, tenor: 5}
+  - {id: CN_10Y,      economy: CNY, name: CGB 10y,                       source: chinabond,  code: "10",         freq: D, transform: level, tenor: 10}
+  - {id: CN_30Y,      economy: CNY, name: CGB 30y,                       source: chinabond,  code: "30",         freq: D, transform: level, tenor: 30}
+  - {id: FX_USDCNY_FIX, economy: CNY, name: USDCNY central parity fixing, source: chinamoney, code: "CCPR|USD/CNY", freq: D, transform: level}
+  - {id: FX_USDCNY,   economy: CNY, name: USDCNY (noon NY),              source: fred,       code: DEXCHUS,      freq: D, transform: level}

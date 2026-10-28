@@ -70,6 +70,9 @@ GRID = [
     ("CHF", "Overnight (SARON)", 0, "CH_SARON"), ("CHF", "2y Conf. (monthly)", 2, "CH_2Y"), ("CHF", "10y Conf. (monthly)", 10, "CH_10Y"),
     ("SEK", "Overnight (SWESTR)", 0, "SE_SWESTR"), ("SEK", "2y SGB", 2, "SE_2Y"), ("SEK", "5y SGB", 5, "SE_5Y"), ("SEK", "10y SGB", 10, "SE_10Y"),
     ("NOK", "Overnight (NOWA)", 0, "NO_NOWA"), ("NOK", "3y NGB", 3, "NO_3Y"), ("NOK", "5y NGB", 5, "NO_5Y"), ("NOK", "10y NGB", 10, "NO_10Y"),
+    ("CNY", "7d reverse repo (policy)", 0, "CN_POLICY"), ("CNY", "7d repo fixing (DR007)", 0.02, "CN_DR007"),
+    ("CNY", "Shibor 3m", 0.25, "CN_SHIBOR3M"), ("CNY", "1y LPR", 0.9, "CN_LPR1Y"),
+    ("CNY", "2y CGB", 2, "CN_2Y"), ("CNY", "5y CGB", 5, "CN_5Y"), ("CNY", "10y CGB", 10, "CN_10Y"), ("CNY", "30y CGB", 30, "CN_30Y"),
 ]
 grid = []
 for eco, label, order, sid in GRID:
@@ -88,6 +91,7 @@ CURVES = {
     "CHF": [("2y", 2, "CH_2Y"), ("5y", 5, "CH_5Y"), ("10y", 10, "CH_10Y"), ("30y", 30, "CH_30Y")],
     "SEK": [("3m", .25, "SE_3M"), ("2y", 2, "SE_2Y"), ("5y", 5, "SE_5Y"), ("10y", 10, "SE_10Y")],
     "NOK": [("3y", 3, "NO_3Y"), ("5y", 5, "NO_5Y"), ("10y", 10, "NO_10Y")],
+    "CNY": [("1y", 1, "CN_1Y"), ("2y", 2, "CN_2Y"), ("5y", 5, "CN_5Y"), ("10y", 10, "CN_10Y"), ("30y", 30, "CN_30Y")],
 }
 curves = []
 for eco, pts in CURVES.items():
@@ -110,6 +114,7 @@ RV = {  # short, belly, 10y, long (None = no long point), labels
     "AUD": ("AU_2Y", "AU_5Y", "AU_10Y", None, "2s10s", None, "2s5s10s fly"),
     "SEK": ("SE_2Y", "SE_5Y", "SE_10Y", None, "2s10s", None, "2s5s10s fly"),
     "NOK": ("NO_3Y", "NO_5Y", "NO_10Y", None, "3s10s", None, "3s5s10s fly"),
+    "CNY": ("CN_2Y", "CN_5Y", "CN_10Y", "CN_30Y", "2s10s", "5s30s", "2s5s10s fly"),
 }
 rv = []
 for eco, (a2, a5, a10, along, l_slope, l_long, l_fly) in RV.items():

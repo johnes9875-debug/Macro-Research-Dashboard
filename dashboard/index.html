@@ -104,7 +104,7 @@
 
 <div class="rm">
   <header class="rm-bar" id="top">
-    <div class="rm-brand"><h1>G10 Rates Monitor</h1><span class="rm-ccys">USD · EUR · GBP · JPY · CAD · AUD · CHF · SEK · NOK</span></div>
+    <div class="rm-brand"><h1>G10 Rates Monitor</h1><span class="rm-ccys">USD · EUR · GBP · JPY · CAD · AUD · CHF · SEK · NOK · CNY</span></div>
     <div class="rm-meta">
       <span>US close <b class="rm-num" data-source="overview" data-field="y10_date" data-where="economy=USD"></b></span>
       <span class="rm-pill" id="fresh-pill"><span><b class="rm-num" data-source="freshness" data-field="fresh"></b>/<span class="rm-num" data-source="freshness" data-field="total"></span> series fresh</span></span>
@@ -112,7 +112,7 @@
     </div>
   </header>
 
-  <p class="rm-reads" id="takeaway">Priced vs policy, ~12m: USD <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=USD"></b> · EUR <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=EUR"></b> · GBP <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=GBP"></b> · JPY <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=JPY"></b> · CAD <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=CAD"></b> · AUD <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=AUD"></b> · CHF <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=CHF"></b> · SEK <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=SEK"></b> · NOK <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=NOK"></b> bp.
+  <p class="rm-reads" id="takeaway">Priced vs policy, ~12m: USD <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=USD"></b> · EUR <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=EUR"></b> · GBP <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=GBP"></b> · JPY <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=JPY"></b> · CAD <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=CAD"></b> · AUD <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=AUD"></b> · CHF <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=CHF"></b> · SEK <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=SEK"></b> · NOK <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=NOK"></b> · CNY <b class="rm-num" data-source="overview" data-field="priced_12m_bp" data-where="economy=CNY"></b> bp.
     BoE OIS prices <b class="rm-num" data-source="boe_meetings" data-field="change_bp" data-row="0"></b>bp at the <span data-source="boe_meetings" data-field="date" data-row="0"></span> MPC
     (<span class="rm-num" data-source="boe_meetings" data-field="hike_odds_pct" data-row="0"></span>% of a 25bp hike).</p>
 
@@ -251,6 +251,10 @@
       <div class="rm-card-h"><span>NOK</span></div>
       <div class="rm-chart" id="snap-NOK" data-source="curves"></div>
     </div>
+    <div class="rm-card">
+      <div class="rm-card-h"><span>CNY</span></div>
+      <div class="rm-chart" id="snap-CNY" data-source="curves"></div>
+    </div>
       </div>
     </section>
     <section id="tp">
@@ -318,6 +322,10 @@
     <div class="rm-card">
       <div class="rm-card-h"><span>NOK</span></div>
       <div class="rm-chart" id="yld-NOK" data-source="yields_hist"></div>
+    </div>
+    <div class="rm-card">
+      <div class="rm-card-h"><span>CNY</span></div>
+      <div class="rm-chart" id="yld-CNY" data-source="yields_hist"></div>
     </div>
       </div>
     </section>
@@ -388,6 +396,10 @@
     <div class="rm-card">
       <div class="rm-card-h"><span>NOK</span></div>
       <div class="rm-chart" id="path-NOK" data-source="implied_path overview"></div><p class="rm-note" data-source="overview" data-field="path_quality" data-where="economy=NOK"></p>
+    </div>
+    <div class="rm-card">
+      <div class="rm-card-h"><span>CNY</span></div>
+      <div class="rm-chart" id="path-CNY" data-source="implied_path overview"></div><p class="rm-note" data-source="overview" data-field="path_quality" data-where="economy=CNY"></p>
     </div>
       </div>
     </section>
@@ -471,7 +483,7 @@
       </div>
       <div class="rm-legend" id="fxr-legend" style="margin-top:8px"></div>
       <div class="rm-grid">
-<div class="rm-card"><div class="rm-card-h"><span>EURUSD</span></div><div class="rm-chart" id="fxr-EURUSD" data-source="fx_rates_hist"></div></div><div class="rm-card"><div class="rm-card-h"><span>GBPUSD</span></div><div class="rm-chart" id="fxr-GBPUSD" data-source="fx_rates_hist"></div></div><div class="rm-card"><div class="rm-card-h"><span>USDJPY</span></div><div class="rm-chart" id="fxr-USDJPY" data-source="fx_rates_hist"></div></div><div class="rm-card"><div class="rm-card-h"><span>AUDUSD</span></div><div class="rm-chart" id="fxr-AUDUSD" data-source="fx_rates_hist"></div></div><div class="rm-card"><div class="rm-card-h"><span>USDCAD</span></div><div class="rm-chart" id="fxr-USDCAD" data-source="fx_rates_hist"></div></div><div class="rm-card"><div class="rm-card-h"><span>USDSEK</span></div><div class="rm-chart" id="fxr-USDSEK" data-source="fx_rates_hist"></div></div><div class="rm-card"><div class="rm-card-h"><span>USDNOK</span></div><div class="rm-chart" id="fxr-USDNOK" data-source="fx_rates_hist"></div></div>
+<div class="rm-card"><div class="rm-card-h"><span>EURUSD</span></div><div class="rm-chart" id="fxr-EURUSD" data-source="fx_rates_hist"></div></div><div class="rm-card"><div class="rm-card-h"><span>GBPUSD</span></div><div class="rm-chart" id="fxr-GBPUSD" data-source="fx_rates_hist"></div></div><div class="rm-card"><div class="rm-card-h"><span>USDJPY</span></div><div class="rm-chart" id="fxr-USDJPY" data-source="fx_rates_hist"></div></div><div class="rm-card"><div class="rm-card-h"><span>AUDUSD</span></div><div class="rm-chart" id="fxr-AUDUSD" data-source="fx_rates_hist"></div></div><div class="rm-card"><div class="rm-card-h"><span>USDCAD</span></div><div class="rm-chart" id="fxr-USDCAD" data-source="fx_rates_hist"></div></div><div class="rm-card"><div class="rm-card-h"><span>USDSEK</span></div><div class="rm-chart" id="fxr-USDSEK" data-source="fx_rates_hist"></div></div><div class="rm-card"><div class="rm-card-h"><span>USDNOK</span></div><div class="rm-chart" id="fxr-USDNOK" data-source="fx_rates_hist"></div></div><div class="rm-card"><div class="rm-card-h"><span>USDCNY</span></div><div class="rm-chart" id="fxr-USDCNY" data-source="fx_rates_hist"></div></div>
       </div>
     </section>
   </div>
@@ -550,7 +562,7 @@
   });
 
 (() => {
-  const ECO = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'SEK', 'NOK'];
+  const ECO = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'SEK', 'NOK', 'CNY'];
   const C = dash.colors;
   const MINUS = '−';
   const sgn = (v, d = 0) => (v == null || isNaN(v)) ? '—' : (v > 0 ? '+' : v < 0 ? MINUS : '') + Math.abs(v).toFixed(d);
@@ -1071,7 +1083,7 @@
       });
     }
     legend('fxr-legend', [['Spot', C[0]], ['Rate-implied fair value', 'var(--cds-chart-muted)', true]]);
-    ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDSEK', 'USDNOK'].forEach(p => {
+    ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDSEK', 'USDNOK', 'USDCNY'].forEach(p => {
       const el = document.getElementById('fxr-' + p);
       if (bad(fh.status)) return failBox(el);
       if (fh.status !== 'ok' || !visible(el)) return;

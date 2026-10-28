@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = json.loads((ROOT / "data" / "outputs" / "dashboard.json").read_text())
 OUT = ROOT / "data" / "outputs" / "dash"
 OUT.mkdir(parents=True, exist_ok=True)
-ORDER = ["USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "SEK", "NOK"]
+ORDER = ["USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "SEK", "NOK", "CNY"]
 
 
 def rnd(x, n):
