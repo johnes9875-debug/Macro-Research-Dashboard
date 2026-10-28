@@ -726,7 +726,7 @@
     ov.data.forEach(r => {
       const tr = document.createElement('tr');
       td(tr, r.economy, 't rm-eco'); td(tr, r.cb, 't');
-      td(tr, pct(N(r.policy), Math.round(N(r.policy) * 1000) % 10 ? 3 : 2));
+      td(tr, r.policy_display || pct(N(r.policy), 2));
       td(tr, r.next_meeting_sgt || (r.next_meeting ? fmtShort(parse(r.next_meeting)) : '—'), 't');
       const dc = td(tr, r.days_to_meeting == null ? '—' : String(N(r.days_to_meeting))); if (N(r.days_to_meeting) <= 7) dc.classList.add('rm-warn', 'rm-strong');
       td(tr, sgn(N(r.priced_12m_bp)), 'rm-strong'); td(tr, sgn(N(r.priced_chg_1w_bp)), 'rm-flat');

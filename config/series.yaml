@@ -63,6 +63,7 @@ series:
   - {id: UK_OIS_FWD,    economy: GBP, name: OIS instantaneous forwards (1-24m), source: boe_curve, code: "OIS|1. fwds, short end|*", freq: D, transform: level}
 
   # ---------------- JPY ----------------
+  - {id: JP_BLR,        economy: JPY, name: BoJ basic loan rate (policy rate + 25bp), source: boj, code: IR01/MADR1Z@D, freq: D, transform: level}
   - {id: JP_CALL,       economy: JPY, name: Uncollateralised overnight call rate, source: boj, code: FM01/STRDCLUCON, freq: D, transform: level}
   - {id: JP_1Y,         economy: JPY, name: JGB 1y,  source: mof, code: 1Y,  freq: D, transform: level, tenor: 1}
   - {id: JP_2Y,         economy: JPY, name: JGB 2y,  source: mof, code: 2Y,  freq: D, transform: level, tenor: 2}

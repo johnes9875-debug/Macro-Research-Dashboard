@@ -32,7 +32,7 @@ for c in ORDER:
     e = E[c]
     nm = e["next_meeting"] or {}
     overview.append({
-        "economy": c, "cb": e["cb"], "y2_label": e.get("y2_label", "2y"), "policy_label": e["policy"]["label"], "policy": rnd(e["policy"]["value"], 3),
+        "economy": c, "cb": e["cb"], "y2_label": e.get("y2_label", "2y"), "policy_label": e["policy"]["label"], "policy": rnd(e["policy"]["value"], 3), "policy_display": e["policy"].get("display"),
         "policy_date": e["policy"]["date"],
         "y2": rnd(e["y2"]["value"], 2), "y2_chg_1d": rnd(e["y2"]["chg_1d"], 0), "y2_chg_1w": rnd(e["y2"]["chg_1w"], 0),
         "y2_chg_1m": rnd(e["y2"]["chg_1m"], 0), "y2_date": e["y2"]["date"],

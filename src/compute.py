@@ -85,8 +85,26 @@ def us_policy() -> pd.Series:
     return (s("US_FF_UPPER") + s("US_FF_LOWER")) / 2
 
 
+def jp_policy() -> pd.Series:
+    """BoJ policy rate (uncollateralised overnight call rate target). The BoJ sets the basic loan rate at
+    target + 25bp (since the July 2024 hike), so target = basic loan rate - 0.25. Before August 2024 the
+    actual call rate is used (the target was a 0-0.1% range or -0.1%)."""
+    blr, call = s("JP_BLR"), s("JP_CALL")
+    if blr.dropna().empty:
+        return call
+    tgt = (blr - 0.25)[blr.index >= "2024-08-01"]
+    return pd.concat([call[call.index < "2024-08-01"], tgt]).sort_index()
+
+
+def policy_display(code: str, value) -> str:
+    """How a desk quotes the policy rate: the Fed as a range, others as a level with 2 decimals."""
+    if code == "USD":
+        return f"{s('US_FF_LOWER').dropna().iloc[-1]:.2f}–{s('US_FF_UPPER').dropna().iloc[-1]:.2f}"
+    return f"{value:.2f}"
+
+
 ECON = {
-    "USD": dict(cb="Fed", policy=us_policy, policy_label="Fed funds target midpoint",
+    "USD": dict(cb="Fed", policy=us_policy, policy_label="Fed funds target range (midpoint used in calculations)",
                 y2="US_2Y", y10="US_10Y", y30="US_30Y", long_label="30y",
                 path=[("1m", 1, "US_1M"), ("3m", 3, "US_3M"), ("6m", 6, "US_6M"), ("1y", 12, "US_1Y"), ("2y", 24, "US_2Y")],
                 path_quality="Proxy: Treasury bill and note yields vs the policy midpoint. Bills also carry supply and term premium, so read the shape, not the exact bp."),
@@ -98,7 +116,7 @@ ECON = {
                 y2="UK_2Y", y10="UK_10Y", y30="UK_20Y", long_label="20y",
                 path=[(f"{m}m", m, f"UK_OIS_FWD_{m:02d}M") for m in (1, 3, 6, 9, 12, 18, 24)],
                 path_quality="Market pricing: Bank of England OIS instantaneous forward curve. Closest to a true priced path."),
-    "JPY": dict(cb="BoJ", policy=lambda: s("JP_CALL"), policy_label="Overnight call rate (actual)",
+    "JPY": dict(cb="BoJ", policy=jp_policy, policy_label="BoJ policy rate (call rate target; basic loan rate − 25bp)",
                 y2="JP_2Y", y10="JP_10Y", y30="JP_30Y", long_label="30y",
                 path=[("1y", 12, "JP_1Y"), ("2y", 24, "JP_2Y")],
                 path_quality="Proxy: JGB 1y and 2y yields vs the overnight call rate. Rough guide only."),
@@ -177,7 +195,8 @@ def economy_block(code: str) -> dict:
     nxt = next((m for m in CAL if m["economy"] == code and pd.Timestamp(m["date"]) >= pd.Timestamp.today().normalize()), None)
     return {
         "cb": cfg["cb"], "y2_label": cfg.get("y2_label", "2y"),
-        "policy": {"label": cfg["policy_label"], "value": r2(pol_now, 3), "date": iso(pol.index[-1])},
+        "policy": {"label": cfg["policy_label"], "value": r2(pol_now, 3), "date": iso(pol.index[-1]),
+                   "display": policy_display(code, pol_now)},
         "next_meeting": nxt,
         "y2": rate_block(cfg["y2"]), "y10": rate_block(cfg["y10"]),
         "ylong": {**rate_block(cfg["y30"]), "label": cfg["long_label"]},
